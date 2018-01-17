@@ -11,8 +11,11 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "qys_file_parser": "github:jjyyxx/qys_file_parser",
-    "tone": "^0.11.11"
+    "@types/vexflow": "^1.2.31",
+    "qys_file_parser": "github:jjyyxx/qys_file_parser#dev",
+    "svg.js": "^2.6.3",
+    "tone": "^0.11.11",
+    "vexflow": "^1.2.84"
   },
   "devDependencies": {
     "@types/tone": "github:Tonejs/typescript",

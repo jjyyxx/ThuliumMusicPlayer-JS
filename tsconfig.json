@@ -1,7 +1,18 @@
 {
+  "compileOnSave": true,
   "compilerOptions": {
-    "sourceMap": true,
-    "outDir": "./output",
-    "allowJs": true
-  }
+      "target": "es6",
+      "module": "commonjs",
+      "sourceMap": true,
+      "noImplicitAny": true,
+      "outDir": "./output",
+      "watch":true,
+      "experimentalDecorators": true
+  },
+  "include": [
+      "**/*.ts"
+  ],
+  "exclude": [
+      "src/Old/*.ts"
+  ]
 }
