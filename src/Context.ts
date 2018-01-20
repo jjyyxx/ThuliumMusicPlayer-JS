@@ -91,7 +91,7 @@ class Context {
         const notes = measure.map((wrap) => wrap.result)
         const voice = new Vex.Flow.Voice({ num_beats: 2, beat_value: 4 })
         voice.addTickables(notes)
-        Vex.Flow.Accidental.applyAccidentals([voice])
+        Vex.Flow.Accidental.applyAccidentals([voice], Object.keys(Global.tonalityDict).find((key) => Global.tonalityDict[key] === measure[0].setting.Key))
         const formatter = new Vex.Flow.Formatter()
         console.log(voice.getTickables(), formatter.joinVoices([voice]).preCalculateMinTotalWidth([voice]))
         formatter.joinVoices([voice]).format([voice], 100)

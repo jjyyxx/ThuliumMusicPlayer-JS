@@ -60,7 +60,7 @@ class GlobalSetting {
     }
 
     public tokensUpdate(funcTokens: FunctionToken[]) {
-        funcTokens.forEach((funcToken) => this.update(funcToken))
+        funcTokens.forEach((funcToken) => this.tokenUpdate(funcToken))
     }
 }
 
