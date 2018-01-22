@@ -134,7 +134,7 @@ class Context {
             }
             if (measures.length > 1) {
                 const con = new Vex.Flow.StaveConnector(staves[0], staves[length - 1])
-                con.setType(Vex.Flow.StaveConnector.type.BRACE)
+                con.setType(Vex.Flow.StaveConnector.type.BRACKET)
                 con.setContext(this.context).draw()
             }
         } else {
