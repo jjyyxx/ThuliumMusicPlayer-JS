@@ -26,10 +26,12 @@ class Context {
     public fileType: string
     public svg: HTMLElement
     public width: number = window.innerWidth
+    public height: number = window.innerHeight
     private renderer: Vex.Flow.Renderer
     private context: Vex.IRenderContext
     private staves: Vex.Flow.Stave[] = []
-    private x: number = 0
+    private x: number = 20
+    private y: number = 40
 
     constructor(content: string, fileType: string, id: string) {
         this.content = content
@@ -41,29 +43,54 @@ class Context {
 
     public paint() {
         this.init()
-        this.paintSection(this.tokenizedData.Sections[0])
+        this.tokenizedData.Sections.forEach(section => this.paintSection(section))
     }
 
     private init() {
         this.renderer = new Vex.Flow.Renderer(this.svg, Vex.Flow.Renderer.Backends.SVG)
         this.context = this.renderer.getContext()
-        this.renderer.resize(this.width, 200)
+        this.renderer.resize(this.width, this.height)
         this.context.setFont('Arial', 10, 1).setBackgroundFillStyle('#eed')
     }
 
     public paintSection(section: Section) {
         const globalSetting = new GlobalSetting()
         globalSetting.tokensUpdate(section.GlobalSettings)
-        this.paintTrack(section.Tracks[0], globalSetting.extend())
+        const length = section.Tracks.length
+        const allTies = []
+        const allBeams = []
+        const allMeasures = []
+        const allTuplets = []
+
+        for (let i = 0; i < length; i++) {
+            const { ties, beams, measures, tuplets } = this.preprocessTrack(section.Tracks[i], globalSetting.extend())
+            allTies.push(ties)
+            allBeams.push(beams)
+            allMeasures.push(measures)
+            allTuplets.push(tuplets)
+        }
+
+        const trackLength = allMeasures[0].length
+
+        for (let i = 0; i < trackLength; i++) {
+            this.drawMeasures(allMeasures.map((track) => track[i]), i === 0)
+        }
+        for (let i = 0; i < length; i++) {
+            this.drawBeams(allBeams[i])
+            this.drawTies(allTies[i])
+            this.drawTuplets(allTuplets[i])
+        }
+
+        this.y += length * 100
+        this.x = 20
     }
 
-    public paintTrack(track: BaseToken[], globalSetting: GlobalSetting) {
-        const { ties, beams, measures, tuplets } = this.preprocessTrack(track, globalSetting)
+    /*public paintTrack(track: BaseToken[], globalSetting: GlobalSetting) {
         measures.forEach((measure) => this.drawMeasure(measure))
         this.drawBeams(beams)
         this.drawTies(ties)
         this.drawTuplets(tuplets)
-    }
+    }*/
 
     private preprocessTrack(track: BaseToken[], globalSetting: GlobalSetting) {
         let contextSetting = globalSetting
@@ -87,20 +114,36 @@ class Context {
         return this.splitWrap(wraps)
     }
 
-    private drawMeasure(measure: any[]) {
-        const notes = measure.map((wrap) => wrap.result)
-        const voice = new Vex.Flow.Voice({ num_beats: 2, beat_value: 4 })
-        voice.addTickables(notes)
-        Vex.Flow.Accidental.applyAccidentals([voice], Object.keys(Global.tonalityDict).find((key) => Global.tonalityDict[key] === measure[0].setting.Key))
+    private drawMeasures(measures: any[][], first: boolean) {
+        const voices = measures.map((measure) => {
+            const notes = measure.map((wrap) => wrap.result)
+            const voice = new Vex.Flow.Voice({ num_beats: measure[0].setting.Bar, beat_value: measure[0].setting.Beat })
+            voice.addTickables(notes)
+            Vex.Flow.Accidental.applyAccidentals([voice], Object.keys(Global.tonalityDict).find((key) => Global.tonalityDict[key] === measure[0].setting.Key))
+            return voice
+        })
         const formatter = new Vex.Flow.Formatter()
-        console.log(voice.getTickables(), formatter.joinVoices([voice]).preCalculateMinTotalWidth([voice]))
-        formatter.joinVoices([voice]).format([voice], 100)
-        if (this.staves.length === 0) {
-            this.addStave(180, { clef: 'treble', keySignature: 'F', timeSignature: '2/4' })
+        formatter.joinVoices(voices).format(voices, 100)
+        if (first) {
+            const length = voices.length
+            const staves = []
+            for (let i = 0; i < length; i++) {
+                const stave = this.addStave(150, 100 * i, i === length - 1, { clef: 'treble', keySignature: measures[i][0].setting.KeySignature, timeSignature: measures[i][0].setting.TimeSignature })
+                voices[i].draw(this.context, stave)
+                staves.push(stave)
+            }
+            if (measures.length > 1) {
+                const con = new Vex.Flow.StaveConnector(staves[0], staves[length - 1])
+                con.setType(Vex.Flow.StaveConnector.type.BRACE)
+                con.setContext(this.context).draw()
+            }
         } else {
-            this.addStave(120)
+            const length = voices.length
+            for (let i = 0; i < length; i++) {
+                const stave = this.addStave(150, 100 * i, i === length - 1)
+                voices[i].draw(this.context, stave)
+            }
         }
-        voice.draw(this.context, this.staves[this.staves.length - 1])
     }
 
     private drawTies(ties: Vex.Flow.StaveTie[]) {
@@ -180,9 +223,10 @@ class Context {
         })
     }
 
-    private addStave(width: number, { clef = '', keySignature = '', timeSignature = '' } = {}) {
-        const stave = new Vex.Flow.Stave(this.x, 40, width)
-        this.x += width
+    private addStave(width: number, y: number, offset: boolean, { clef = '', keySignature = '', timeSignature = '' } = {}) {
+        width += (clef === '' ? 0 : 60)
+        const stave = new Vex.Flow.Stave(this.x, this.y + y, width)
+        this.x += offset ? width : 0
         if (clef !== '') {
             stave.addClef(clef)
         }
@@ -194,6 +238,7 @@ class Context {
         }
         stave.setContext(this.context).draw()
         this.staves.push(stave)
+        return stave
     }
 }
 

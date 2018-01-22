@@ -1,4 +1,5 @@
 import { FunctionToken } from "qys_file_parser/dist/tokens/Function";
+import { Global } from "qys_file_parser/dist/Global";
 
 class GlobalSetting {
     public Key: number
@@ -44,6 +45,17 @@ class GlobalSetting {
         this.FadeIn = FadeIn
         this.FadeOut = FadeOut
     }
+
+
+    public get KeySignature(): string {
+        return Object.keys(Global.tonalityDict).find((key) => Global.tonalityDict[key] === this.Key)
+    }
+
+    
+    public get TimeSignature() : string {
+        return `${this.Bar}/${this.Beat}`
+    }
+    
 
     public extend(settingObj = {}): GlobalSetting {
         const newSetting = new GlobalSetting()
