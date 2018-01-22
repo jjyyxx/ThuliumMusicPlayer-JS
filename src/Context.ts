@@ -136,6 +136,9 @@ class Context {
                 const con = new Vex.Flow.StaveConnector(staves[0], staves[length - 1])
                 con.setType(Vex.Flow.StaveConnector.type.BRACKET)
                 con.setContext(this.context).draw()
+                const con1 = new Vex.Flow.StaveConnector(staves[0], staves[length - 1])
+                con1.setType(Vex.Flow.StaveConnector.type.SINGLE_LEFT)
+                con1.setContext(this.context).draw()
             }
         } else {
             const length = voices.length
