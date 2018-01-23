@@ -89,7 +89,7 @@ export class Factory {
         if (note.Suffix.length > 0) {
             const last = note.Suffix[note.Suffix.length - 1]
             if (last.suffixType === SuffixType.DotAfter) {
-                return (4 / Factory.calcDuration(note.Suffix.slice(0, -1))).toString() + '.'.repeat(last.dotCount)
+                return (4 / Factory.calcDuration(note.Suffix.slice(0, -1))).toString() + 'd'.repeat(last.dotCount)
             } else if (note.Suffix[0].suffixType === SuffixType.Underline) {
                 return (4 / Factory.calcDuration(note.Suffix)).toString()
             } else {

@@ -123,12 +123,12 @@ class Context {
             return voice
         })
         const formatter = new Vex.Flow.Formatter()
-        formatter.joinVoices(voices).format(voices, 100)
+        formatter.format(voices, 200, {align_rests: true, context: this.context})
         if (first) {
             const length = voices.length
             const staves = []
             for (let i = 0; i < length; i++) {
-                const stave = this.addStave(150, 100 * i, i === length - 1, { clef: 'treble', keySignature: measures[i][0].setting.KeySignature, timeSignature: measures[i][0].setting.TimeSignature })
+                const stave = this.addStave(250, 100 * i, i === length - 1, { clef: 'treble', keySignature: measures[i][0].setting.KeySignature, timeSignature: measures[i][0].setting.TimeSignature })
                 voices[i].draw(this.context, stave)
                 staves.push(stave)
             }
@@ -143,7 +143,7 @@ class Context {
         } else {
             const length = voices.length
             for (let i = 0; i < length; i++) {
-                const stave = this.addStave(150, 100 * i, i === length - 1)
+                const stave = this.addStave(250, 100 * i, i === length - 1)
                 voices[i].draw(this.context, stave)
             }
         }
