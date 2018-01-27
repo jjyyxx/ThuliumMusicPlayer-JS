@@ -12,6 +12,8 @@ import { GlobalSetting } from './GlobalSetting';
 import { FunctionToken } from 'qys_file_parser/dist/tokens/Function';
 
 const Dict = ['c', 'd', 'e', 'f', 'g', 'a', 'b']
+const WIDTH = 100;
+const TIMES = 1.5;
 
 type Wrap = {
     index: number,
@@ -119,16 +121,22 @@ class Context {
             const notes = measure.map((wrap) => wrap.result)
             const voice = new Vex.Flow.Voice({ num_beats: measure[0].setting.Bar, beat_value: measure[0].setting.Beat })
             voice.addTickables(notes)
+            voice.setStrict(false)
             Vex.Flow.Accidental.applyAccidentals([voice], Object.keys(Global.tonalityDict).find((key) => Global.tonalityDict[key] === measure[0].setting.Key))
             return voice
         })
         const formatter = new Vex.Flow.Formatter()
-        formatter.format(voices, 200, {align_rests: true, context: this.context})
+        let minWidth = formatter.preCalculateMinTotalWidth(voices)
+        if (minWidth <= WIDTH) {
+            minWidth = WIDTH
+        }
+        const suitableWidth = minWidth * TIMES;
+        formatter.format(voices, minWidth * TIMES, {align_rests: true, context: this.context})
         if (first) {
             const length = voices.length
             const staves = []
             for (let i = 0; i < length; i++) {
-                const stave = this.addStave(250, 100 * i, i === length - 1, { clef: 'treble', keySignature: measures[i][0].setting.KeySignature, timeSignature: measures[i][0].setting.TimeSignature })
+                const stave = this.addStave(suitableWidth + 100, 100 * i, i === length - 1, { clef: 'treble', keySignature: measures[i][0].setting.KeySignature, timeSignature: measures[i][0].setting.TimeSignature })
                 voices[i].draw(this.context, stave)
                 staves.push(stave)
             }
@@ -143,7 +151,7 @@ class Context {
         } else {
             const length = voices.length
             for (let i = 0; i < length; i++) {
-                const stave = this.addStave(250, 100 * i, i === length - 1)
+                const stave = this.addStave(suitableWidth + 50, 100 * i, i === length - 1)
                 voices[i].draw(this.context, stave)
             }
         }

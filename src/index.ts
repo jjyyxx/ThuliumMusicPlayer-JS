@@ -1,6 +1,10 @@
 import { Context } from './Context'
 import './Util'
 
+/*import * as monaco from '@timkendrick/monaco-editor';
+
+monaco.editor.create();*/
+
 const text = (document.getElementById('text')) as HTMLTextAreaElement
 document.getElementById('submit').onclick = function (e) {
     const str = text.value
