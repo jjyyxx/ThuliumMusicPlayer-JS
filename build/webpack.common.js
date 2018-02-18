@@ -22,7 +22,7 @@ module.exports = {
         new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({
             'template': './index.html'
-        })
+        }),
     ],
     output: {
         filename: '[name].bundle.js',
