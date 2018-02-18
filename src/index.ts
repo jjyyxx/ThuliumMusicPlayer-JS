@@ -30,9 +30,8 @@ let ColorRules: any
 window.onload = function () {
     (<any>window).require.config({ paths: { 'vs': 'vs' } });
     (<any>window).require(['vs/editor/editor.main'], function () {
-        (<any>window).monaco = monaco
-    });
-    (<HTMLTextAreaElement>this.document.getElementById('color')).value = 
+        (<any>window).monaco = monaco;
+        (<HTMLTextAreaElement>this.document.getElementById('color')).value =
 `[
     { "token": "undef", "foreground": "FF0000" },
     { "token": "comment", "foreground": "008800" },
@@ -57,16 +56,18 @@ window.onload = function () {
     { "token": "press-release", "foreground": "fcde00" },
     { "token": "tie", "foreground": "fcde00" }
 ]`
-    document.getElementById('gen').onclick = () => {
-        try {
-            ColorRules = JSON.parse((<HTMLTextAreaElement>this.document.getElementById('color')).value)
-        } catch (error) {
-            alert('Invalid json!')
-            ColorRules = ColorRulesDefault
+        document.getElementById('gen').onclick = () => {
+            try {
+                ColorRules = JSON.parse((<HTMLTextAreaElement>this.document.getElementById('color')).value)
+            } catch (error) {
+                alert('Invalid json!')
+                ColorRules = ColorRulesDefault
+            }
+            defineLanguage()
+            showEditor()
         }
-        defineLanguage()
-        showEditor()
-    }
+    });
+
 }
 
 function defineLanguage() {
