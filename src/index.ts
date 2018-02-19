@@ -25,6 +25,8 @@ const ColorRules = [
     { token: 'tie', foreground: 'fcde00' },
 ]
 
+import * as FileSaver from 'file-saver'
+
 window.onload = function () {
     (<any>window).require.config({ paths: { 'vs': 'vs' } });
     (<any>window).require(['vs/editor/editor.main'], function () {
@@ -39,7 +41,6 @@ function defineLanguage() {
         id: 'smml',
         extensions: ['sml']
     })
-    // monaco.languages.setTokensProvider('qy', new LineTokenizer())
     monaco.editor.defineTheme('smml', {
         base: 'vs-dark',
         inherit: true,
@@ -577,6 +578,30 @@ function showEditor() {
         language: 'smml',
         theme: 'smml',
         folding: true
+    })
+    editor.addAction({
+        id: 'smml-save',
+        label: 'Save smml file',
+        keybindings: [
+            monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S,
+        ],
+        precondition: null,
+        keybindingContext: null,
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: function (editor) {
+            const value = editor.getValue()
+            localStorage.setItem('lastText', value)
+            const firstLine = value.slice(0, value.indexOf('\n'))
+            let name
+            if (firstLine !== '' && firstLine.startsWith('//')) {
+                name = firstLine.slice(2).trim()
+            } else {
+                name = 'new_file'
+            }
+            const blob = new Blob([value], {type: "text/plain;charset=utf-8"})
+            FileSaver.saveAs(blob, `${name}.sml`)
+        }
     })
     window.onresize = () => {
         editor.layout()
