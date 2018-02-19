@@ -23,8 +23,12 @@ const fileManifest = [
     "revision": "b92610bb6b6bc77d78dfe254f302d964"
   },
   {
+    "url": "favicon.ico",
+    "revision": "6b6f1aa6df8c0ae6adc59b8a348bd4b0"
+  },
+  {
     "url": "index.html",
-    "revision": "78eabcd43199378e30ca95fb0b1f50b4"
+    "revision": "11a39638faac53666733bdcb283c606d"
   },
   {
     "url": "vs/base/worker/workerMain.js",

@@ -27,7 +27,7 @@ module.exports = {
         }),
         new WorkboxPlugin({
             globDirectory: 'dist',
-            globPatterns: ['**/*.{html,js,css}'],
+            globPatterns: ['**/*.{html,js,css,ico}'],
             swDest: path.join('dist', 'sw.js'),
             clientsClaim: true,
             skipWaiting: true,
