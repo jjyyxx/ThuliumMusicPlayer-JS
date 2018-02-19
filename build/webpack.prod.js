@@ -10,7 +10,7 @@ module.exports = merge(common, {
         new CopyWebpackPlugin([
             {
                 from: 'node_modules/monaco-editor/min/vs',
-                to: 'vs',
+                to: 'vs'
             }
         ]),
     ]

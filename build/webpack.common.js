@@ -1,6 +1,8 @@
+/* eslint-env node */
 const path = require('path')
 const CleanWebpackPlugin = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
+const WorkboxPlugin = require('workbox-webpack-plugin')
 
 module.exports = {
     entry: {
@@ -23,6 +25,13 @@ module.exports = {
         new HtmlWebpackPlugin({
             'template': './index.html'
         }),
+        new WorkboxPlugin({
+            globDirectory: 'dist',
+            globPatterns: ['**/*.{html,js,css}'],
+            swDest: path.join('dist', 'sw.js'),
+            clientsClaim: true,
+            skipWaiting: true,
+        })
     ],
     output: {
         filename: '[name].bundle.js',

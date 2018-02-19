@@ -34,6 +34,13 @@ window.onload = function () {
         defineLanguage()
         showEditor()
     })
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').then(registration => {
+            console.log('SW registered: ', registration)
+        }).catch(registrationError => {
+            console.log('SW registration failed: ', registrationError)
+        })
+    }
 }
 
 function defineLanguage() {
@@ -599,7 +606,7 @@ function showEditor() {
             } else {
                 name = 'new_file'
             }
-            const blob = new Blob([value], {type: "text/plain;charset=utf-8"})
+            const blob = new Blob([value], { type: "text/plain;charset=utf-8" })
             FileSaver.saveAs(blob, `${name}.sml`)
         }
     })
