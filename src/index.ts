@@ -32,7 +32,7 @@ window.onload = function () {
     (<any>window).require(['vs/editor/editor.main'], function () {
         (<any>window).monaco = monaco;
         (<HTMLTextAreaElement>this.document.getElementById('color')).value =
-`[
+            `[
     { "token": "undef", "foreground": "FF0000" },
     { "token": "comment", "foreground": "008800" },
 
@@ -113,19 +113,46 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /<\*[a-z]+\*>/,
+                    regex: /\[(\d+\.)+\]/,
+                    action: {
+                        token: 'volta'
+                    }
+                },
+                {
+                    regex: /<[^*]+>/,
+                    action: {
+                        token: 'instr'
+                    }
+                },
+                {
+                    include: 'Common'
+                }
+            ],
+            Subtrack: [
+                {
+                    regex: /\d+\*|\/\d*:/,
+                    action: {
+                        token: 'repeat'
+                    }
+                },
+                {
+                    regex: /\//,
+                    action: {
+                        token: 'repeat'
+                    }
+                },
+                {
+                    regex: /\^\)|\)/,
                     action: {
                         token: '@rematch',
                         next: '@pop'
                     }
                 },
                 {
-                    regex: /# *End/,
-                    action: {
-                        token: '@rematch',
-                        next: '@pop'
-                    }
-                },
+                    include: 'Common'
+                }
+            ],
+            Common: [
                 {
                     regex: /@[a-z]+/,
                     action: {
@@ -133,21 +160,64 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /\[(\d\.)+\]/,
+                    regex: /(\$?)([\d%x])/,
+                    action: <any>[
+                        {
+                            token: 'func'
+                        },
+                        {
+                            cases: {
+                                '@eos': {
+                                    token: 'degree',
+                                },
+                                '@default': {
+                                    token: 'degree',
+                                    next: 'NoteOp'
+                                }
+                            }
+                        }
+                    ]
+                },
+                {
+                    regex: /(\$?)(\[)/,
+                    action: <any>[
+                        {
+                            token: 'func'
+                        },
+                        {
+                            token: '@rematch',
+                            next: 'Chord'
+                        }
+                    ]
+                },
+                {
+                    regex: /\(/,
                     action: {
-                        token: 'volta'
+                        token: '@rematch',
+                        next: 'Sfunc'
                     }
                 },
                 {
-                    regex: /:\|\|:|:\|\||\|\|:|\|\||\|/,
+                    regex: /([A-Z][a-z]+)+\(/,
                     action: {
-                        token: 'barline'
+                        token: '@rematch',
+                        next: 'Func'
                     }
                 },
                 {
-                    regex: /\d+\*|\/\d*:/,
+                    regex: /{/,
                     action: {
-                        token: 'repeat'
+                        bracket: '@open',
+                        token: '@bracket',
+                        next: 'Subtrack'
+                    }
+                },
+                {
+                    regex: /}/,
+                    action: {
+                        bracket: '@close',
+                        token: '@bracket',
+                        next: '@pop'
                     }
                 },
                 {
@@ -163,55 +233,166 @@ function defineLanguage() {
                     }
                 },
                 {
+                    regex: /~/,
+                    action: {
+                        token: 'func'
+                    }
+                },
+                {
                     regex: /\^/,
                     action: {
                         token: 'tie'
                     }
                 },
                 {
+                    regex: /:\|\|:|:\|\||\|\|:|\|\||\|/,
+                    action: {
+                        token: 'barline'
+                    }
+                },
+            ],
+            Sfunc: [
+                {
+                    regex: /\(\.\)/,
+                    action: {
+                        token: 'func',
+                        next: '@pop'
+                    }
+                },
+                {
+                    regex: /\(\^/,
+                    action: {
+                        token: 'func',
+                        next: 'Subtrack'
+                    }
+                },
+                {
+                    regex: /\(|\^|:|1=/,
+                    action: {
+                        token: 'func',
+                    }
+                },
+                {
                     regex: /{/,
                     action: {
-                        bracket: '@open',
                         token: '@bracket',
+                        next: 'Subtrack'
                     }
                 },
                 {
-                    regex: /}/,
+                    regex: /[^\)]+\^\)/,
                     action: {
-                        bracket: '@close',
-                        token: '@bracket',
+                        token: '@rematch',
+                        next: 'Subtrack'
                     }
                 },
                 {
-                    regex: /\([^\)]+\)/,
+                    regex: /\^\)/,
                     action: {
-                        token: 'sfunc'
+                        token: 'func',
+                        next: '@pop'
                     }
                 },
                 {
-                    regex: /([A-Z][a-z]+)+\([^\)]+\)/,
+                    regex: /\)/,
+                    action: {
+                        token: 'func',
+                        next: '@pop'
+                    }
+                },
+                {
+                    regex: /[A-Za-zb#%\d\.\-\/]/,
+                    action: {
+                        token: 'number',
+                    }
+                },
+            ],
+            Func: [
+                {
+                    regex: /[A-Z][a-z]+/,
                     action: {
                         token: 'func'
                     }
                 },
                 {
-                    regex: /<[^*]+>/,
+                    regex: /\(/,
                     action: {
-                        token: 'instr'
+                        token: 'func',
+                        next: 'Arg'
                     }
                 },
                 {
-                    regex: /[\d%]/,
+                    regex: /\)/,
                     action: {
-                        token: 'degree',
-                        next: 'NoteOp'
+                        token: 'func',
+                        next: '@pop'
+                    }
+                },
+                {
+                    regex: /,\s*/,
+                    action: {
+                        token: 'func',
+                        next: 'Arg'
+                    }
+                }
+            ],
+            Array: [
+                {
+                    regex: /\[/,
+                    action: {
+                        token: 'func',
+                        bracket: '@open',
+                        next: 'Arg'
+                    }
+                },
+                {
+                    regex: /,\s*/,
+                    action: {
+                        token: 'func',
+                        next: 'Arg'
+                    }
+                },
+                {
+                    regex: /\]/,
+                    action: {
+                        token: 'func',
+                        bracket: '@close',
+                        next: '@pop'
+                    }
+                },
+            ],
+            Arg: [
+                {
+                    regex: /{/,
+                    action: {
+                        token: '@bracket',
+                        next: 'Subtrack'
+                    }
+                },
+                {
+                    regex: /"[^"]*"/,
+                    action: {
+                        token: 'string'
                     }
                 },
                 {
                     regex: /\[/,
                     action: {
                         token: '@rematch',
-                        next: 'Chord'
+                        next: 'Array'
+                    }
+                },
+                {
+                    regex: /,|\)|\]/,
+                    action: {
+                        token: '@rematch',
+                        next: '@pop'
+                    }
+                },
+                {
+                    regex: /[^,\)}\[\]"]+/,
+                    action: {
+                        token: 'number'
                     }
                 }
             ],
@@ -224,15 +405,36 @@ function defineLanguage() {
                     }
                 },
                 {
+                    include: 'NoteAddon'
+                }
+            ],
+            NoteAddon: [
+                {
                     regex: /[',b#a-zA-Z]/,
                     action: {
-                        token: 'pitOp-chord'
+                        cases: {
+                            '@eos': {
+                                token: 'pitOp-chord',
+                                next: '@pop'
+                            },
+                            '@default': {
+                                token: 'pitOp-chord'
+                            }
+                        }
                     }
                 },
                 {
                     regex: /[\-_\.=`:>]/,
                     action: {
-                        token: 'durOp-stac-volOp'
+                        cases: {
+                            '@eos': {
+                                token: 'durOp-stac-volOp',
+                                next: '@pop'
+                            },
+                            '@default': {
+                                token: 'durOp-stac-volOp'
+                            }
+                        }
                     }
                 }
             ],
@@ -245,12 +447,6 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /[',b#a-zA-Z]/,
-                    action: {
-                        token: 'pitOp-chord'
-                    }
-                },
-                {
                     regex: /[^',b#a-zA-Z\-_\.=`:>]/,
                     action: {
                         token: '@rematch',
@@ -258,10 +454,7 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /[\-_\.=`:>]/,
-                    action: {
-                        token: 'durOp-stac-volOp'
-                    }
+                    include: 'NoteAddon'
                 }
             ],
             ChordInside: [
@@ -345,10 +538,9 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /<\*[a-z]+\*>/,
+                    regex: /<\*[A-Za-z\d]+\*>/,
                     action: {
-                        token: 'macroIndicator',
-                        next: 'root'
+                        token: 'macroIndicator'
                     }
                 },
                 {
@@ -359,6 +551,9 @@ function defineLanguage() {
                         next: '@pop'
                     }
                 },
+                {
+                    include: 'Common'
+                }
             ],
             Inc: [
                 {
@@ -375,13 +570,11 @@ function defineLanguage() {
                     }
                 }
             ],
-            Section: [
-
-            ],
+            Section: [],
             Track: []
         },
         tokenPostfix: '.sml',
-        defaultToken: 'undef'
+        defaultToken: 'undef',
     })
     monaco.languages.registerDefinitionProvider('smml', {
         provideDefinition(model, position, token) {
