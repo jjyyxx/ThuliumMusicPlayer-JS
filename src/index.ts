@@ -66,8 +66,7 @@ window.onload = function () {
             defineLanguage()
             showEditor()
         }
-    });
-
+    })
 }
 
 function defineLanguage() {
@@ -616,6 +615,7 @@ function showEditor() {
     element.style.overflow = "hidden"
     document.body.appendChild(element)
     const editor = monaco.editor.create(element, {
+        value: localStorage.getItem('lastText'),
         language: 'smml',
         theme: 'smml',
         folding: true
@@ -623,5 +623,11 @@ function showEditor() {
     (<any>window).editor = editor
     window.onresize = () => {
         editor.layout()
+    }
+    window.onbeforeunload = (e) => {
+        const value = editor.getValue()
+        if (value !== '') {
+            localStorage.setItem('lastText', value)
+        }
     }
 }
