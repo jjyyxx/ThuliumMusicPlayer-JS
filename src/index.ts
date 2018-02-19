@@ -30,42 +30,9 @@ let ColorRules: any
 window.onload = function () {
     (<any>window).require.config({ paths: { 'vs': 'vs' } });
     (<any>window).require(['vs/editor/editor.main'], function () {
-        (<any>window).monaco = monaco;
-        (<HTMLTextAreaElement>this.document.getElementById('color')).value =
-            `[
-    { "token": "undef", "foreground": "FF0000" },
-    { "token": "comment", "foreground": "008800" },
-
-    { "token": "sfunc", "foreground": "FF909B" },
-    { "token": "func", "foreground": "FF909B" },
-    { "token": "instr", "foreground": "bf00ff", "fontStyle": "bold" },
-    { "token": "macro", "foreground": "7CFC00" },
-    { "token": "macroIndicator", "foreground": "bf00ff" },
-    { "token": "inc", "foreground": "7CFC00" },
-    { "token": "incPath", "foreground": "87CEFA" },
-
-    { "token": "degree", "foreground": "00FFFF" },
-    { "token": "pitOp-chord", "foreground": "00BBFF" },
-    { "token": "durOp-stac-volOp", "foreground": "00FFBB" },
-    { "token": "chordBracket", "foreground": "00BBBB" },
-
-    { "token": "@bracket", "foreground": "fc8f00" },
-    { "token": "volta", "foreground": "FFFF00" },
-    { "token": "barline", "foreground": "fc8f00" },
-    { "token": "repeat", "foreground": "FFFF00" },
-    { "token": "press-release", "foreground": "fcde00" },
-    { "token": "tie", "foreground": "fcde00" }
-]`
-        document.getElementById('gen').onclick = () => {
-            try {
-                ColorRules = JSON.parse((<HTMLTextAreaElement>this.document.getElementById('color')).value)
-            } catch (error) {
-                alert('Invalid json!')
-                ColorRules = ColorRulesDefault
-            }
-            defineLanguage()
-            showEditor()
-        }
+        (<any>window).monaco = monaco
+        defineLanguage()
+        showEditor()
     })
 }
 
@@ -607,20 +574,12 @@ function defineLanguage() {
 }
 
 function showEditor() {
-    document.body.innerHTML = ''
-    const element = document.createElement('div')
-    element.id = "container"
-    element.style.width = "100%"
-    element.style.height = "100%"
-    element.style.overflow = "hidden"
-    document.body.appendChild(element)
-    const editor = monaco.editor.create(element, {
+    const editor = monaco.editor.create(document.getElementById('container'), {
         value: localStorage.getItem('lastText'),
         language: 'smml',
         theme: 'smml',
         folding: true
-    });
-    (<any>window).editor = editor
+    })
     window.onresize = () => {
         editor.layout()
     }
