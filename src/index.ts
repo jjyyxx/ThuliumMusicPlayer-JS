@@ -1,6 +1,6 @@
 /// <reference path="../node_modules/monaco-editor/monaco.d.ts" />
 
-const ColorRulesDefault = [
+const ColorRules = [
     { token: 'undef', foreground: 'FF0000' },
     { token: 'comment', foreground: '008800' },
 
@@ -24,8 +24,6 @@ const ColorRulesDefault = [
     { token: 'press-release', foreground: 'fcde00' },
     { token: 'tie', foreground: 'fcde00' },
 ]
-
-let ColorRules: any
 
 window.onload = function () {
     (<any>window).require.config({ paths: { 'vs': 'vs' } });
