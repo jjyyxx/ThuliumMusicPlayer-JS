@@ -10,7 +10,7 @@ window.require(['vs/editor/editor.main'], function () {
         id: 'smml-play',
         label: 'Play smml file',
         keybindings: [
-            window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_Q,
+            window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_P,
         ],
         precondition: null,
         keybindingContext: null,
