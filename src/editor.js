@@ -366,7 +366,7 @@ export function defineLanguage() {
             ],
             NoteAddon: [
                 {
-                    regex: /[',b#awyzA-Z]/,
+                    regex: /[',b#a-wyzA-Z]/,
                     action: {
                         cases: {
                             '@eos': {
