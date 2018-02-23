@@ -564,7 +564,9 @@ export function defineLanguage() {
 }
 
 export function showEditor() {
-    const editor = window.monaco.editor.create(document.getElementById('container'), {
+    const container = document.getElementById('container')
+
+    const editor = window.monaco.editor.create(container, {
         value: localStorage.getItem('lastText'),
         language: 'smml',
         theme: 'smml',
@@ -580,7 +582,7 @@ export function showEditor() {
         keybindingContext: null,
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
-        run: function (editor) {
+        run (editor) {
             const value = editor.getValue()
             localStorage.setItem('lastText', value)
             const firstLine = value.slice(0, value.indexOf('\n'))
@@ -603,5 +605,24 @@ export function showEditor() {
             localStorage.setItem('lastText', value)
         }
     }
+
+    container.addEventListener('drop', (ev) => {
+        ev.preventDefault()
+        var dt = ev.dataTransfer
+        if (dt.items) {
+            // Use DataTransferItemList interface to access the file(s)
+            // for (var i = 0; i < dt.items.length; i++) {
+            if (dt.items[0].kind === 'file') {
+                const f = dt.items[0].getAsFile()
+                const fr = new FileReader()
+                fr.readAsText(f)
+                fr.onload = () => editor.executeEdits('dnd', [{ identifier: 'drag & drop', range: new window.monaco.Range(1, 1, editor.getModel().getLineCount(), editor.getModel().getLineMaxColumn(editor.getModel().getLineCount())), text: fr.result }])
+            }
+            // }
+        }
+    })
+    container.addEventListener('dragover', (e) => e.preventDefault())
+
+    editor.updateOptions({ mouseWheelZoom: true, dragAndDrop: true })
     return editor
 }
