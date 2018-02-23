@@ -110,7 +110,7 @@ export function defineLanguage() {
             ],
             Common: [
                 {
-                    regex: /@[a-z]+/,
+                    regex: /@[A-Za-z\d]+/,
                     action: {
                         token: 'macroIndicator'
                     }
@@ -354,7 +354,7 @@ export function defineLanguage() {
             ],
             NoteOp: [
                 {
-                    regex: /[^',b#a-zA-Z\-_.=`:>]/,
+                    regex: /[^',b#a-wyzA-Z\-_.=`:>]/,
                     action: {
                         token: '@rematch',
                         next: '@pop'
@@ -366,7 +366,7 @@ export function defineLanguage() {
             ],
             NoteAddon: [
                 {
-                    regex: /[',b#a-zA-Z]/,
+                    regex: /[',b#awyzA-Z]/,
                     action: {
                         cases: {
                             '@eos': {
@@ -403,7 +403,7 @@ export function defineLanguage() {
                     }
                 },
                 {
-                    regex: /[^',b#a-zA-Z\-_.=`:>]/,
+                    regex: /[^',b#a-wyzA-Z\-_.=`:>]/,
                     action: {
                         token: '@rematch',
                         next: '@pop'
@@ -427,7 +427,7 @@ export function defineLanguage() {
                     }
                 },
                 {
-                    regex: /[',b#a-zA-Z]/,
+                    regex: /[',b#a-wyzA-Z]/,
                     action: {
                         token: 'pitOp-chord'
                     }
@@ -466,7 +466,7 @@ export function defineLanguage() {
             ],
             ChordDefLine: [
                 {
-                    regex: /^[a-zA-Z]/,
+                    regex: /^[a-wyzA-Z]/,
                     action: {
                         token: 'pitOp-chord',
                     }
@@ -534,7 +534,7 @@ export function defineLanguage() {
     })
     window.monaco.languages.registerDefinitionProvider('smml', {
         provideDefinition(model, position, token) {
-            const matches = model.findMatches('@[a-z]+', false, true, false, '', true)
+            const matches = model.findMatches('@[A-Za-z0-9]+', false, true, false, '', true)
             const trueMatch = matches.find((match) => match.range.startLineNumber === position.lineNumber && match.range.endLineNumber === position.lineNumber && match.range.startColumn <= position.column && match.range.endColumn >= position.column)
             if (!trueMatch) return
             const def = model.findMatches(`<*${trueMatch.matches[0].slice(1)}*>`, false, false, true, '', false)[0]
