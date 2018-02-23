@@ -13,8 +13,9 @@
   "dependencies": {
     "file-saver": "^1.3.3",
     "monaco-editor": "^0.10.1",
-    "qys_file_parser": "github:jjyyxx/qys_file_parser#rel",
-    "vexflow": "^1.2.84"
+    "qingyun-musicplayer-parser": "file:../QingyunMusicPlayer-Parser",
+    "webaudiofont": "file:../webaudiofont",
+    "smml-tokenizer-js": "file:../SMML-Tokenizer-JS"
   },
   "devDependencies": {
     "@types/file-saver": "^1.3.0",

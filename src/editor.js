@@ -27,34 +27,18 @@ const ColorRules = [
 
 import * as FileSaver from 'file-saver'
 
-window.onload = function () {
-    (<any>window).require.config({ paths: { 'vs': 'vs' } });
-    (<any>window).require(['vs/editor/editor.main'], function () {
-        (<any>window).monaco = monaco
-        defineLanguage()
-        showEditor()
-    })
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('./sw.js').then(registration => {
-            console.log('SW registered: ', registration)
-        }).catch(registrationError => {
-            console.log('SW registration failed: ', registrationError)
-        })
-    }
-}
-
-function defineLanguage() {
-    monaco.languages.register({
+export function defineLanguage() {
+    window.monaco.languages.register({
         id: 'smml',
         extensions: ['sml']
     })
-    monaco.editor.defineTheme('smml', {
+    window.monaco.editor.defineTheme('smml', {
         base: 'vs-dark',
         inherit: true,
         rules: ColorRules,
         colors: {}
     })
-    monaco.languages.setMonarchTokensProvider('smml', {
+    window.monaco.languages.setMonarchTokensProvider('smml', {
         tokenizer: {
             root: [
                 {
@@ -133,7 +117,7 @@ function defineLanguage() {
                 },
                 {
                     regex: /(\$?)([\d%x])/,
-                    action: <any>[
+                    action: [
                         {
                             token: 'func'
                         },
@@ -152,7 +136,7 @@ function defineLanguage() {
                 },
                 {
                     regex: /(\$?)(\[)/,
-                    action: <any>[
+                    action: [
                         {
                             token: 'func'
                         },
@@ -252,7 +236,7 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /[^\)]+\^\)/,
+                    regex: /[^)]+\^\)/,
                     action: {
                         token: '@rematch',
                         next: 'Subtrack'
@@ -273,7 +257,7 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /[A-Za-zb#%\d\.\-\/]/,
+                    regex: /[A-Za-zb#%\d.\-/]/,
                     action: {
                         token: 'number',
                     }
@@ -362,7 +346,7 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /[^,\)}\[\]"]+/,
+                    regex: /[^,)}[\]"]+/,
                     action: {
                         token: 'number'
                     }
@@ -370,7 +354,7 @@ function defineLanguage() {
             ],
             NoteOp: [
                 {
-                    regex: /[^',b#a-zA-Z\-_\.=`:>]/,
+                    regex: /[^',b#a-zA-Z\-_.=`:>]/,
                     action: {
                         token: '@rematch',
                         next: '@pop'
@@ -396,7 +380,7 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /[\-_\.=`:>]/,
+                    regex: /[-_.=`:>]/,
                     action: {
                         cases: {
                             '@eos': {
@@ -419,7 +403,7 @@ function defineLanguage() {
                     }
                 },
                 {
-                    regex: /[^',b#a-zA-Z\-_\.=`:>]/,
+                    regex: /[^',b#a-zA-Z\-_.=`:>]/,
                     action: {
                         token: '@rematch',
                         next: '@pop'
@@ -548,7 +532,7 @@ function defineLanguage() {
         tokenPostfix: '.sml',
         defaultToken: 'undef',
     })
-    monaco.languages.registerDefinitionProvider('smml', {
+    window.monaco.languages.registerDefinitionProvider('smml', {
         provideDefinition(model, position, token) {
             const matches = model.findMatches('@[a-z]+', false, true, false, '', true)
             const trueMatch = matches.find((match) => match.range.startLineNumber === position.lineNumber && match.range.endLineNumber === position.lineNumber && match.range.startColumn <= position.column && match.range.endColumn >= position.column)
@@ -560,7 +544,7 @@ function defineLanguage() {
             }
         }
     })
-    monaco.languages.registerCompletionItemProvider('smml', {
+    window.monaco.languages.registerCompletionItemProvider('smml', {
         triggerCharacters: ['<'],
         provideCompletionItems(model, position, token) {
             const char = model.getValueInRange({ startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: position.column - 1, endColumn: position.column })
@@ -568,7 +552,7 @@ function defineLanguage() {
                 return [
                     {
                         label: 'Piano',
-                        kind: monaco.languages.CompletionItemKind.Variable,
+                        kind: window.monaco.languages.CompletionItemKind.Variable,
                         documentation: 'Piano',
                         insertText: 'Piano>'
                     }
@@ -579,8 +563,8 @@ function defineLanguage() {
     })
 }
 
-function showEditor() {
-    const editor = monaco.editor.create(document.getElementById('container'), {
+export function showEditor() {
+    const editor = window.monaco.editor.create(document.getElementById('container'), {
         value: localStorage.getItem('lastText'),
         language: 'smml',
         theme: 'smml',
@@ -590,7 +574,7 @@ function showEditor() {
         id: 'smml-save',
         label: 'Save smml file',
         keybindings: [
-            monaco.KeyMod.CtrlCmd | monaco.KeyCode.KEY_S,
+            window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_S,
         ],
         precondition: null,
         keybindingContext: null,
@@ -606,7 +590,7 @@ function showEditor() {
             } else {
                 name = 'new_file'
             }
-            const blob = new Blob([value], { type: "text/plain;charset=utf-8" })
+            const blob = new Blob([value], { type: 'text/plain;charset=utf-8' })
             FileSaver.saveAs(blob, `${name}.sml`)
         }
     })
@@ -619,4 +603,5 @@ function showEditor() {
             localStorage.setItem('lastText', value)
         }
     }
+    return editor
 }
