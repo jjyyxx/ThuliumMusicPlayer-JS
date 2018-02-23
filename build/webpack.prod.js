@@ -20,6 +20,12 @@ module.exports = merge(common, {
             swDest: path.join('dist', 'sw.js'),
             clientsClaim: true,
             skipWaiting: true,
+            runtimeCaching: [
+                {
+                    urlPattern: /https:\/\/jjyyxx\.github\.io\/webaudiofontdata\/data\//,
+                    handler: 'cacheFirst'
+                }
+            ]
         })
     ]
 })

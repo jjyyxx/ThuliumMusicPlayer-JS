@@ -20,7 +20,7 @@ importScripts('workbox-sw.prod.v2.1.2.js');
 const fileManifest = [
   {
     "url": "app.bundle.js",
-    "revision": "027fb09c2212d03b17a93d200869305c"
+    "revision": "a6304080144d0632bc1e0e098d100d87"
   },
   {
     "url": "favicon.ico",
@@ -273,3 +273,4 @@ const workboxSW = new self.WorkboxSW({
   "clientsClaim": true
 });
 workboxSW.precache(fileManifest);
+workboxSW.router.registerRoute(/https:\/\/jjyyxx\.github\.io\/webaudiofontdata\/data\//, workboxSW.strategies.cacheFirst({}), 'GET');
