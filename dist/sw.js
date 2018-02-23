@@ -28,7 +28,7 @@ const fileManifest = [
   },
   {
     "url": "index.html",
-    "revision": "11a39638faac53666733bdcb283c606d"
+    "revision": "4452bacbfa062cc371dba63397106080"
   },
   {
     "url": "vs/base/worker/workerMain.js",

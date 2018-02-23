@@ -23,13 +23,13 @@ window.require(['vs/editor/editor.main'], function () {
     })
 })
 
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').then(registration => {
-        console.log('SW registered: ', registration)
-    }).catch(registrationError => {
-        console.log('SW registration failed: ', registrationError)
-    })
-}
+// if ('serviceWorker' in navigator) {
+//     navigator.serviceWorker.register('./sw.js').then(registration => {
+//         console.log('SW registered: ', registration)
+//     }).catch(registrationError => {
+//         console.log('SW registration failed: ', registrationError)
+//     })
+// }
 
 var audioLibDir = 'https://jjyyxx.github.io/webaudiofontdata/data/'
 var defaultInstr = 'Piano'
