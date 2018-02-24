@@ -7,22 +7,19 @@ module.exports = {
     entry: {
         app: './src/index.js'
     },
-    module: {
-        rules: [
-            {
-                test: /\.tsx?$/,
-                use: 'ts-loader',
-                exclude: /node_modules/
-            }
-        ]
-    },
     resolve: {
-        extensions: ['.tsx', '.ts', '.js']
+        extensions: ['.js']
     },
     plugins: [
         new CleanWebpackPlugin(['dist']),
         new HtmlWebpackPlugin({
-            'template': './index.html'
+            template: './index.html',
+            inject: true,
+            minify: {
+                removeComments: true,
+                collapseWhitespace: true,
+                removeAttributeQuotes: true
+            },
         })
     ],
     output: {

@@ -25,7 +25,503 @@ const ColorRules = [
     { token: 'tie', foreground: 'fcde00' },
 ]
 
+const LangDef = {
+    tokenizer: {
+        root: [
+            {
+                regex: /\/\/.*/,
+                action: {
+                    token: 'comment'
+                }
+            },
+            {
+                regex: /# *Track/,
+                action: {
+                    token: '@rematch',
+                    next: 'Macro'
+                }
+            },
+            {
+                regex: /# *Chord/,
+                action: {
+                    token: '@rematch',
+                    next: 'ChordDef'
+                }
+            },
+            {
+                regex: /# *Include/,
+                action: {
+                    token: '@rematch',
+                    next: '@Inc'
+                }
+            },
+            {
+                regex: /\[(\d+\.)+\]/,
+                action: {
+                    token: 'volta'
+                }
+            },
+            {
+                regex: /<[^*]+>/,
+                action: {
+                    token: 'instr'
+                }
+            },
+            {
+                include: 'Common'
+            }
+        ],
+        Subtrack: [
+            {
+                regex: /\d+\*|\/\d*:/,
+                action: {
+                    token: 'repeat'
+                }
+            },
+            {
+                regex: /\//,
+                action: {
+                    token: 'repeat'
+                }
+            },
+            {
+                regex: /\^\)|\)/,
+                action: {
+                    token: '@rematch',
+                    next: '@pop'
+                }
+            },
+            {
+                include: 'Common'
+            }
+        ],
+        Common: [
+            {
+                regex: /@[A-Za-z\d]+/,
+                action: {
+                    token: 'macroIndicator'
+                }
+            },
+            {
+                regex: /(\$?)([\d%x])/,
+                action: [
+                    {
+                        token: 'func'
+                    },
+                    {
+                        cases: {
+                            '@eos': {
+                                token: 'degree',
+                            },
+                            '@default': {
+                                token: 'degree',
+                                next: 'NoteOp'
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                regex: /(\$?)(\[)/,
+                action: [
+                    {
+                        token: 'func'
+                    },
+                    {
+                        token: '@rematch',
+                        next: 'Chord'
+                    }
+                ]
+            },
+            {
+                regex: /\(/,
+                action: {
+                    token: '@rematch',
+                    next: 'Sfunc'
+                }
+            },
+            {
+                regex: /([A-Z][a-z]+)+\(/,
+                action: {
+                    token: '@rematch',
+                    next: 'Func'
+                }
+            },
+            {
+                regex: /{/,
+                action: {
+                    bracket: '@open',
+                    token: '@bracket',
+                    next: 'Subtrack'
+                }
+            },
+            {
+                regex: /}/,
+                action: {
+                    bracket: '@close',
+                    token: '@bracket',
+                    next: '@pop'
+                }
+            },
+            {
+                regex: /&/,
+                action: {
+                    token: 'press-release'
+                }
+            },
+            {
+                regex: /\*/,
+                action: {
+                    token: 'press-release'
+                }
+            },
+            {
+                regex: /~/,
+                action: {
+                    token: 'func'
+                }
+            },
+            {
+                regex: /\^/,
+                action: {
+                    token: 'tie'
+                }
+            },
+            {
+                regex: /:\|\|:|:\|\||\|\|:|\|\||\|/,
+                action: {
+                    token: 'barline'
+                }
+            },
+        ],
+        Sfunc: [
+            {
+                regex: /\(\.\)/,
+                action: {
+                    token: 'func',
+                    next: '@pop'
+                }
+            },
+            {
+                regex: /\(\^/,
+                action: {
+                    token: 'func',
+                    next: 'Subtrack'
+                }
+            },
+            {
+                regex: /\(|\^|:|1=/,
+                action: {
+                    token: 'func',
+                }
+            },
+            {
+                regex: /{/,
+                action: {
+                    token: '@bracket',
+                    next: 'Subtrack'
+                }
+            },
+            {
+                regex: /[^)]+\^\)/,
+                action: {
+                    token: '@rematch',
+                    next: 'Subtrack'
+                }
+            },
+            {
+                regex: /\^\)/,
+                action: {
+                    token: 'func',
+                    next: '@pop'
+                }
+            },
+            {
+                regex: /\)/,
+                action: {
+                    token: 'func',
+                    next: '@pop'
+                }
+            },
+            {
+                regex: /[A-Za-zb#%\d.\-/]/,
+                action: {
+                    token: 'number',
+                }
+            },
+        ],
+        Func: [
+            {
+                regex: /[A-Z][a-z]+/,
+                action: {
+                    token: 'func'
+                }
+            },
+            {
+                regex: /\(/,
+                action: {
+                    token: 'func',
+                    next: 'Arg'
+                }
+            },
+            {
+                regex: /\)/,
+                action: {
+                    token: 'func',
+                    next: '@pop'
+                }
+            },
+            {
+                regex: /,\s*/,
+                action: {
+                    token: 'func',
+                    next: 'Arg'
+                }
+            }
+        ],
+        Array: [
+            {
+                regex: /\[/,
+                action: {
+                    token: 'func',
+                    bracket: '@open',
+                    next: 'Arg'
+                }
+            },
+            {
+                regex: /,\s*/,
+                action: {
+                    token: 'func',
+                    next: 'Arg'
+                }
+            },
+            {
+                regex: /\]/,
+                action: {
+                    token: 'func',
+                    bracket: '@close',
+                    next: '@pop'
+                }
+            },
+        ],
+        Arg: [
+            {
+                regex: /{/,
+                action: {
+                    token: '@bracket',
+                    next: 'Subtrack'
+                }
+            },
+            {
+                regex: /"[^"]*"/,
+                action: {
+                    token: 'string'
+                }
+            },
+            {
+                regex: /\[/,
+                action: {
+                    token: '@rematch',
+                    next: 'Array'
+                }
+            },
+            {
+                regex: /,|\)|\]/,
+                action: {
+                    token: '@rematch',
+                    next: '@pop'
+                }
+            },
+            {
+                regex: /[^,)}[\]"]+/,
+                action: {
+                    token: 'number'
+                }
+            }
+        ],
+        NoteOp: [
+            {
+                regex: /[^',b#a-wyzA-Z\-_.=`:>]/,
+                action: {
+                    token: '@rematch',
+                    next: '@pop'
+                }
+            },
+            {
+                include: 'NoteAddon'
+            }
+        ],
+        NoteAddon: [
+            {
+                regex: /[',b#a-wyzA-Z]/,
+                action: {
+                    cases: {
+                        '@eos': {
+                            token: 'pitOp-chord',
+                            next: '@pop'
+                        },
+                        '@default': {
+                            token: 'pitOp-chord'
+                        }
+                    }
+                }
+            },
+            {
+                regex: /[-_.=`:>]/,
+                action: {
+                    cases: {
+                        '@eos': {
+                            token: 'durOp-stac-volOp',
+                            next: '@pop'
+                        },
+                        '@default': {
+                            token: 'durOp-stac-volOp'
+                        }
+                    }
+                }
+            }
+        ],
+        Chord: [
+            {
+                regex: /\[/,
+                action: {
+                    token: '@rematch',
+                    next: 'ChordInside'
+                }
+            },
+            {
+                regex: /[^',b#a-wyzA-Z\-_.=`:>]/,
+                action: {
+                    token: '@rematch',
+                    next: '@pop'
+                }
+            },
+            {
+                include: 'NoteAddon'
+            }
+        ],
+        ChordInside: [
+            {
+                regex: /\[/,
+                action: {
+                    token: 'chordBracket'
+                }
+            },
+            {
+                regex: /[\d%]/,
+                action: {
+                    token: 'degree',
+                }
+            },
+            {
+                regex: /[',b#a-wyzA-Z]/,
+                action: {
+                    token: 'pitOp-chord'
+                }
+            },
+            {
+                regex: /\]/,
+                action: {
+                    token: 'chordBracket',
+                    next: '@pop'
+                }
+            }
+        ],
+        ChordDef: [
+            {
+                regex: /# *Chord/,
+                action: {
+                    token: 'macro',
+                    bracket: '@open',
+                }
+            },
+            {
+                regex: /# *End/,
+                action: {
+                    token: 'macro',
+                    bracket: '@close',
+                    next: '@pop'
+                }
+            },
+            {
+                regex: /^.+$/,
+                action: {
+                    token: '@rematch',
+                    next: 'ChordDefLine'
+                }
+            },
+        ],
+        ChordDefLine: [
+            {
+                regex: /^[a-wyzA-Z]/,
+                action: {
+                    token: 'pitOp-chord',
+                }
+            },
+            {
+                regex: /\t+[^\t]+\t+/,
+                action: {
+                    token: 'comment',
+                }
+            },
+            {
+                regex: /.*/,
+                action: {
+                    token: 'pitOp-chord',
+                    next: '@pop'
+                }
+            },
+        ],
+        Macro: [
+            {
+                regex: /# *Track/,
+                action: {
+                    token: 'macro',
+                    bracket: '@open',
+                }
+            },
+            {
+                regex: /<\*[A-Za-z\d]+\*>/,
+                action: {
+                    token: 'macroIndicator'
+                }
+            },
+            {
+                regex: /# *End/,
+                action: {
+                    token: 'macro',
+                    bracket: '@close',
+                    next: '@pop'
+                }
+            },
+            {
+                include: 'Common'
+            }
+        ],
+        Inc: [
+            {
+                regex: /# *Include/,
+                action: {
+                    token: 'inc'
+                }
+            },
+            {
+                regex: /".*"/,
+                action: {
+                    token: 'incPath',
+                    next: '@pop'
+                }
+            }
+        ],
+        Section: [],
+        Track: []
+    },
+    tokenPostfix: '.sml',
+    defaultToken: 'undef',
+}
+
 import * as FileSaver from 'file-saver'
+import { play } from './player'
 
 export function defineLanguage() {
     window.monaco.languages.register({
@@ -38,500 +534,7 @@ export function defineLanguage() {
         rules: ColorRules,
         colors: {}
     })
-    window.monaco.languages.setMonarchTokensProvider('smml', {
-        tokenizer: {
-            root: [
-                {
-                    regex: /\/\/.*/,
-                    action: {
-                        token: 'comment'
-                    }
-                },
-                {
-                    regex: /# *Track/,
-                    action: {
-                        token: '@rematch',
-                        next: 'Macro'
-                    }
-                },
-                {
-                    regex: /# *Chord/,
-                    action: {
-                        token: '@rematch',
-                        next: 'ChordDef'
-                    }
-                },
-                {
-                    regex: /# *Include/,
-                    action: {
-                        token: '@rematch',
-                        next: '@Inc'
-                    }
-                },
-                {
-                    regex: /\[(\d+\.)+\]/,
-                    action: {
-                        token: 'volta'
-                    }
-                },
-                {
-                    regex: /<[^*]+>/,
-                    action: {
-                        token: 'instr'
-                    }
-                },
-                {
-                    include: 'Common'
-                }
-            ],
-            Subtrack: [
-                {
-                    regex: /\d+\*|\/\d*:/,
-                    action: {
-                        token: 'repeat'
-                    }
-                },
-                {
-                    regex: /\//,
-                    action: {
-                        token: 'repeat'
-                    }
-                },
-                {
-                    regex: /\^\)|\)/,
-                    action: {
-                        token: '@rematch',
-                        next: '@pop'
-                    }
-                },
-                {
-                    include: 'Common'
-                }
-            ],
-            Common: [
-                {
-                    regex: /@[A-Za-z\d]+/,
-                    action: {
-                        token: 'macroIndicator'
-                    }
-                },
-                {
-                    regex: /(\$?)([\d%x])/,
-                    action: [
-                        {
-                            token: 'func'
-                        },
-                        {
-                            cases: {
-                                '@eos': {
-                                    token: 'degree',
-                                },
-                                '@default': {
-                                    token: 'degree',
-                                    next: 'NoteOp'
-                                }
-                            }
-                        }
-                    ]
-                },
-                {
-                    regex: /(\$?)(\[)/,
-                    action: [
-                        {
-                            token: 'func'
-                        },
-                        {
-                            token: '@rematch',
-                            next: 'Chord'
-                        }
-                    ]
-                },
-                {
-                    regex: /\(/,
-                    action: {
-                        token: '@rematch',
-                        next: 'Sfunc'
-                    }
-                },
-                {
-                    regex: /([A-Z][a-z]+)+\(/,
-                    action: {
-                        token: '@rematch',
-                        next: 'Func'
-                    }
-                },
-                {
-                    regex: /{/,
-                    action: {
-                        bracket: '@open',
-                        token: '@bracket',
-                        next: 'Subtrack'
-                    }
-                },
-                {
-                    regex: /}/,
-                    action: {
-                        bracket: '@close',
-                        token: '@bracket',
-                        next: '@pop'
-                    }
-                },
-                {
-                    regex: /&/,
-                    action: {
-                        token: 'press-release'
-                    }
-                },
-                {
-                    regex: /\*/,
-                    action: {
-                        token: 'press-release'
-                    }
-                },
-                {
-                    regex: /~/,
-                    action: {
-                        token: 'func'
-                    }
-                },
-                {
-                    regex: /\^/,
-                    action: {
-                        token: 'tie'
-                    }
-                },
-                {
-                    regex: /:\|\|:|:\|\||\|\|:|\|\||\|/,
-                    action: {
-                        token: 'barline'
-                    }
-                },
-            ],
-            Sfunc: [
-                {
-                    regex: /\(\.\)/,
-                    action: {
-                        token: 'func',
-                        next: '@pop'
-                    }
-                },
-                {
-                    regex: /\(\^/,
-                    action: {
-                        token: 'func',
-                        next: 'Subtrack'
-                    }
-                },
-                {
-                    regex: /\(|\^|:|1=/,
-                    action: {
-                        token: 'func',
-                    }
-                },
-                {
-                    regex: /{/,
-                    action: {
-                        token: '@bracket',
-                        next: 'Subtrack'
-                    }
-                },
-                {
-                    regex: /[^)]+\^\)/,
-                    action: {
-                        token: '@rematch',
-                        next: 'Subtrack'
-                    }
-                },
-                {
-                    regex: /\^\)/,
-                    action: {
-                        token: 'func',
-                        next: '@pop'
-                    }
-                },
-                {
-                    regex: /\)/,
-                    action: {
-                        token: 'func',
-                        next: '@pop'
-                    }
-                },
-                {
-                    regex: /[A-Za-zb#%\d.\-/]/,
-                    action: {
-                        token: 'number',
-                    }
-                },
-            ],
-            Func: [
-                {
-                    regex: /[A-Z][a-z]+/,
-                    action: {
-                        token: 'func'
-                    }
-                },
-                {
-                    regex: /\(/,
-                    action: {
-                        token: 'func',
-                        next: 'Arg'
-                    }
-                },
-                {
-                    regex: /\)/,
-                    action: {
-                        token: 'func',
-                        next: '@pop'
-                    }
-                },
-                {
-                    regex: /,\s*/,
-                    action: {
-                        token: 'func',
-                        next: 'Arg'
-                    }
-                }
-            ],
-            Array: [
-                {
-                    regex: /\[/,
-                    action: {
-                        token: 'func',
-                        bracket: '@open',
-                        next: 'Arg'
-                    }
-                },
-                {
-                    regex: /,\s*/,
-                    action: {
-                        token: 'func',
-                        next: 'Arg'
-                    }
-                },
-                {
-                    regex: /\]/,
-                    action: {
-                        token: 'func',
-                        bracket: '@close',
-                        next: '@pop'
-                    }
-                },
-            ],
-            Arg: [
-                {
-                    regex: /{/,
-                    action: {
-                        token: '@bracket',
-                        next: 'Subtrack'
-                    }
-                },
-                {
-                    regex: /"[^"]*"/,
-                    action: {
-                        token: 'string'
-                    }
-                },
-                {
-                    regex: /\[/,
-                    action: {
-                        token: '@rematch',
-                        next: 'Array'
-                    }
-                },
-                {
-                    regex: /,|\)|\]/,
-                    action: {
-                        token: '@rematch',
-                        next: '@pop'
-                    }
-                },
-                {
-                    regex: /[^,)}[\]"]+/,
-                    action: {
-                        token: 'number'
-                    }
-                }
-            ],
-            NoteOp: [
-                {
-                    regex: /[^',b#a-wyzA-Z\-_.=`:>]/,
-                    action: {
-                        token: '@rematch',
-                        next: '@pop'
-                    }
-                },
-                {
-                    include: 'NoteAddon'
-                }
-            ],
-            NoteAddon: [
-                {
-                    regex: /[',b#a-wyzA-Z]/,
-                    action: {
-                        cases: {
-                            '@eos': {
-                                token: 'pitOp-chord',
-                                next: '@pop'
-                            },
-                            '@default': {
-                                token: 'pitOp-chord'
-                            }
-                        }
-                    }
-                },
-                {
-                    regex: /[-_.=`:>]/,
-                    action: {
-                        cases: {
-                            '@eos': {
-                                token: 'durOp-stac-volOp',
-                                next: '@pop'
-                            },
-                            '@default': {
-                                token: 'durOp-stac-volOp'
-                            }
-                        }
-                    }
-                }
-            ],
-            Chord: [
-                {
-                    regex: /\[/,
-                    action: {
-                        token: '@rematch',
-                        next: 'ChordInside'
-                    }
-                },
-                {
-                    regex: /[^',b#a-wyzA-Z\-_.=`:>]/,
-                    action: {
-                        token: '@rematch',
-                        next: '@pop'
-                    }
-                },
-                {
-                    include: 'NoteAddon'
-                }
-            ],
-            ChordInside: [
-                {
-                    regex: /\[/,
-                    action: {
-                        token: 'chordBracket'
-                    }
-                },
-                {
-                    regex: /[\d%]/,
-                    action: {
-                        token: 'degree',
-                    }
-                },
-                {
-                    regex: /[',b#a-wyzA-Z]/,
-                    action: {
-                        token: 'pitOp-chord'
-                    }
-                },
-                {
-                    regex: /\]/,
-                    action: {
-                        token: 'chordBracket',
-                        next: '@pop'
-                    }
-                }
-            ],
-            ChordDef: [
-                {
-                    regex: /# *Chord/,
-                    action: {
-                        token: 'macro',
-                        bracket: '@open',
-                    }
-                },
-                {
-                    regex: /# *End/,
-                    action: {
-                        token: 'macro',
-                        bracket: '@close',
-                        next: '@pop'
-                    }
-                },
-                {
-                    regex: /^.+$/,
-                    action: {
-                        token: '@rematch',
-                        next: 'ChordDefLine'
-                    }
-                },
-            ],
-            ChordDefLine: [
-                {
-                    regex: /^[a-wyzA-Z]/,
-                    action: {
-                        token: 'pitOp-chord',
-                    }
-                },
-                {
-                    regex: /\t+[^\t]+\t+/,
-                    action: {
-                        token: 'comment',
-                    }
-                },
-                {
-                    regex: /.*/,
-                    action: {
-                        token: 'pitOp-chord',
-                        next: '@pop'
-                    }
-                },
-            ],
-            Macro: [
-                {
-                    regex: /# *Track/,
-                    action: {
-                        token: 'macro',
-                        bracket: '@open',
-                    }
-                },
-                {
-                    regex: /<\*[A-Za-z\d]+\*>/,
-                    action: {
-                        token: 'macroIndicator'
-                    }
-                },
-                {
-                    regex: /# *End/,
-                    action: {
-                        token: 'macro',
-                        bracket: '@close',
-                        next: '@pop'
-                    }
-                },
-                {
-                    include: 'Common'
-                }
-            ],
-            Inc: [
-                {
-                    regex: /# *Include/,
-                    action: {
-                        token: 'inc'
-                    }
-                },
-                {
-                    regex: /".*"/,
-                    action: {
-                        token: 'incPath',
-                        next: '@pop'
-                    }
-                }
-            ],
-            Section: [],
-            Track: []
-        },
-        tokenPostfix: '.sml',
-        defaultToken: 'undef',
-    })
+    window.monaco.languages.setMonarchTokensProvider('smml', LangDef)
     window.monaco.languages.registerDefinitionProvider('smml', {
         provideDefinition(model, position, token) {
             const matches = model.findMatches('@[A-Za-z0-9]+', false, true, false, '', true)
@@ -570,7 +573,7 @@ export function showEditor() {
         value: localStorage.getItem('lastText'),
         language: 'smml',
         theme: 'smml',
-        folding: true
+        folding: false
     })
     editor.addAction({
         id: 'smml-save',
@@ -596,33 +599,44 @@ export function showEditor() {
             FileSaver.saveAs(blob, `${name}.sml`)
         }
     })
-    window.onresize = () => {
+
+    editor.addAction({
+        id: 'smml-play',
+        label: 'Play smml file',
+        keybindings: [
+            window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_P,
+        ],
+        precondition: null,
+        keybindingContext: null,
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run(editor) {
+            play(editor.getValue())
+        }
+    })
+
+    addEventListener('resize', e => {
         editor.layout()
-    }
-    window.onbeforeunload = (e) => {
+    })
+    addEventListener('beforeunload', e => {
         const value = editor.getValue()
         if (value !== '') {
             localStorage.setItem('lastText', value)
         }
-    }
-
+    })
     container.addEventListener('drop', (ev) => {
         ev.preventDefault()
         var dt = ev.dataTransfer
         if (dt.items) {
-            // Use DataTransferItemList interface to access the file(s)
-            // for (var i = 0; i < dt.items.length; i++) {
             if (dt.items[0].kind === 'file') {
                 const f = dt.items[0].getAsFile()
                 const fr = new FileReader()
                 fr.readAsText(f)
                 fr.onload = () => editor.executeEdits('dnd', [{ identifier: 'drag & drop', range: new window.monaco.Range(1, 1, editor.getModel().getLineCount(), editor.getModel().getLineMaxColumn(editor.getModel().getLineCount())), text: fr.result }])
             }
-            // }
         }
     })
     container.addEventListener('dragover', (e) => e.preventDefault())
-
     editor.updateOptions({ mouseWheelZoom: true, dragAndDrop: true })
     return editor
 }
