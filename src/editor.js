@@ -548,7 +548,7 @@ export function defineLanguage() {
         }
     })
     window.monaco.languages.registerCompletionItemProvider('smml', {
-        triggerCharacters: ['<'],
+        triggerCharacters: ['<', '@'],
         provideCompletionItems(model, position, token) {
             const char = model.getValueInRange({ startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: position.column - 1, endColumn: position.column })
             if (char === '<') {
@@ -560,6 +560,14 @@ export function defineLanguage() {
                         insertText: 'Piano>'
                     }
                 ]
+            }
+            if (char === '@') {
+                const matches = model.findMatches('<\\*([A-Za-z0-9]+)\\*>', false, true, false, '', true)
+                return matches.map(match => ({
+                    label: match.matches[1],
+                    kind: window.monaco.languages.CompletionItemKind.Variable,
+                    insertText: match.matches[1]
+                }))
             }
             return []
         }
@@ -585,7 +593,7 @@ export function showEditor() {
         keybindingContext: null,
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
-        run (editor) {
+        run(editor) {
             const value = editor.getValue()
             localStorage.setItem('lastText', value)
             const firstLine = value.slice(0, value.indexOf('\n'))
@@ -637,6 +645,5 @@ export function showEditor() {
         }
     })
     container.addEventListener('dragover', (e) => e.preventDefault())
-    editor.updateOptions({ mouseWheelZoom: true, dragAndDrop: true })
-    return editor
+    editor.updateOptions({ mouseWheelZoom: true })
 }
