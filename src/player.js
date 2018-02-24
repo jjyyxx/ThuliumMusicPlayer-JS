@@ -1,5 +1,5 @@
 import { Tokenizer } from 'smml-tokenizer-js'
-import { Player } from 'webaudiofont'
+import * as waf from 'webaudiofont'
 import { Parser, MIDIAdapter } from 'qingyun-musicplayer-parser'
 import { audioLibDir, defaultInstr, drumDict, instrDict } from './config'
 
@@ -27,30 +27,78 @@ function audioLibVar(instr) {
     }
 }
 
-export function play(result) {
-    const tracks = new Parser(new Tokenizer(result).tokenize(), new MIDIAdapter()).parse()
-    const audioCtx = new (window.AudioContext || window.webkitAudioContext)()
-    const player = new Player()
-    const instrNames = tracks.map((track) => track.Instrument)
-    Promise.all(instrNames.map((instr) => player.loader.load(audioCtx, audioLibFile(instr), audioLibVar(instr)))).then(
-        (instrs) => {
-            const initialTime = audioCtx.currentTime
-            for (var i = 0, tracksLength = tracks.length; i < tracksLength; i++) {
-                const content = tracks[i].Content
-                for (var j = 0, contentLength = content.length; j < contentLength; j++) {
-                    if (content[j].Type === 'Note') {
-                        player.queueWaveTable(
-                            audioCtx,
-                            audioCtx.destination,
-                            window.fonts[instrs[i]],
-                            content[j].StartTime + initialTime,
-                            ((content[j].Pitch === null) ? (drumDict[tracks[i].Instrument]) : (content[j].Pitch + 60)),
-                            content[j].Duration,
-                            content[j].Volume
-                        )
+export class Player {
+    constructor(value) {
+        this.value = value
+        this.tracks = new Parser(new Tokenizer(value).tokenize(), new MIDIAdapter()).parse()
+        this.ctx = new AudioContext()
+        this.player = new waf.Player()
+        this.status = 0
+    }
+
+    play() {
+        if (status === 1) {
+            return
+        }
+        this.status = 1
+        const instrNames = this.tracks.map((track) => track.Instrument)
+        Promise.all(instrNames.map((instr) => this.player.loader.load(this.ctx, audioLibFile(instr), audioLibVar(instr)))).then(
+            (instrs) => {
+                const initialTime = this.ctx.currentTime
+                for (var i = 0, tracksLength = this.tracks.length; i < tracksLength; i++) {
+                    const content = this.tracks[i].Content
+                    for (var j = 0, contentLength = content.length; j < contentLength; j++) {
+                        if (content[j].Type === 'Note') {
+                            this.player.queueWaveTable(
+                                this.ctx,
+                                this.ctx.destination,
+                                window.fonts[instrs[i]],
+                                content[j].StartTime + initialTime,
+                                ((content[j].Pitch === null) ? (drumDict[this.tracks[i].Instrument]) : (content[j].Pitch + 60)),
+                                content[j].Duration,
+                                content[j].Volume
+                            )
+                        }
                     }
                 }
             }
+        )
+    }
+
+    suspend() {
+        if (this.status === 2) {
+            return
         }
-    )
+        this.status = 2
+        this.ctx.suspend()
+    }
+
+    resume() {
+        if (status === 1) {
+            return
+        }
+        this.status = 1
+        this.ctx.resume()
+    }
+
+    close() {
+        if (this.status === 3) {
+            return
+        }
+        this.status = 3
+        this.ctx.close()
+    }
+
+    toggle() {
+        switch (this.status) {
+        case 0:
+            this.play()
+            break
+        case 1:
+            this.suspend()
+            break
+        case 2:
+            this.resume()
+        }
+    }
 }

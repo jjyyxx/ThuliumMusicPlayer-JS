@@ -1,5 +1,5 @@
 import * as FileSaver from 'file-saver'
-import { play } from './player'
+import { Player } from './player'
 
 const ColorRules = [
     { token: 'undef', foreground: 'FF0000' },
@@ -521,6 +521,7 @@ const LangDef = {
     defaultToken: 'undef',
 }
 
+let player
 export function defineLanguage() {
     window.monaco.languages.register({
         id: 'smml',
@@ -617,7 +618,19 @@ export function showEditor() {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run(editor) {
-            play(editor.getValue())
+            const value = editor.getValue()
+            if (player instanceof Player) {
+                if (player.value === value) {
+                    player.toggle()
+                } else {
+                    player.close()
+                    player = new Player(value)
+                    player.play()
+                }
+            } else {
+                player = new Player(value)
+                player.play()
+            }
         }
     })
 
