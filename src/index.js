@@ -5,6 +5,6 @@ window.require(['vs/editor/editor.main'], () => {
     showEditor()
 })
 
-// if ('serviceWorker' in navigator) {
-//     navigator.serviceWorker.register('./sw.js')
-// }
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+}

@@ -1,4 +1,5 @@
-/// <reference path="../node_modules/monaco-editor/monaco.d.ts" />
+import * as FileSaver from 'file-saver'
+import { play } from './player'
 
 const ColorRules = [
     { token: 'undef', foreground: 'FF0000' },
@@ -520,9 +521,6 @@ const LangDef = {
     defaultToken: 'undef',
 }
 
-import * as FileSaver from 'file-saver'
-import { play } from './player'
-
 export function defineLanguage() {
     window.monaco.languages.register({
         id: 'smml',
@@ -576,13 +574,14 @@ export function defineLanguage() {
 
 export function showEditor() {
     const container = document.getElementById('container')
-
+    const model = window.monaco.editor.createModel(localStorage.getItem('lastText'), 'smml')
     const editor = window.monaco.editor.create(container, {
-        value: localStorage.getItem('lastText'),
+        model,
         language: 'smml',
         theme: 'smml',
         folding: false
     })
+
     editor.addAction({
         id: 'smml-save',
         label: 'Save smml file',
@@ -607,7 +606,6 @@ export function showEditor() {
             FileSaver.saveAs(blob, `${name}.sml`)
         }
     })
-
     editor.addAction({
         id: 'smml-play',
         label: 'Play smml file',
@@ -632,9 +630,9 @@ export function showEditor() {
             localStorage.setItem('lastText', value)
         }
     })
-    container.addEventListener('drop', (ev) => {
-        ev.preventDefault()
-        var dt = ev.dataTransfer
+    container.addEventListener('drop', e => {
+        e.preventDefault()
+        const dt = e.dataTransfer
         if (dt.items) {
             if (dt.items[0].kind === 'file') {
                 const f = dt.items[0].getAsFile()
@@ -644,6 +642,6 @@ export function showEditor() {
             }
         }
     })
-    container.addEventListener('dragover', (e) => e.preventDefault())
+    container.addEventListener('dragover', e => e.preventDefault())
     editor.updateOptions({ mouseWheelZoom: true })
 }
