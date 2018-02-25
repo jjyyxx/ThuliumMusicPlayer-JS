@@ -1,6 +1,7 @@
 import { Tokenizer } from 'smml-tokenizer-js'
 import * as waf from 'webaudiofont'
-import { Parser, MIDIAdapter } from 'qingyun-musicplayer-parser'
+import { Parser } from 'qingyun-musicplayer-parser/src/Parser'
+import { MIDIAdapter } from 'qingyun-musicplayer-parser/src/adapter/MIDIAdapter'
 import { audioLibDir, defaultInstr, drumDict, instrDict } from './config'
 
 window.fonts = window.fonts || {}
