@@ -559,8 +559,7 @@ export function defineLanguage() {
                         insertText: 'Piano>'
                     }
                 ]
-            }
-            if (char === '@') {
+            } else if (char === '@') {
                 const matches = model.findMatches('<\\*([A-Za-z0-9]+)\\*>', false, true, false, '', true)
                 return matches.map(match => ({
                     label: match.matches[1],
@@ -568,7 +567,13 @@ export function defineLanguage() {
                     insertText: match.matches[1]
                 }))
             }
-            return []
+            return [
+                {
+                    label: 'Oct',
+                    kind: window.monaco.languages.CompletionItemKind.Function,
+                    insertText: 'foo(${1:bar},frob)'
+                }
+            ]
         }
     })
 }
@@ -582,6 +587,11 @@ export function showEditor() {
         theme: 'smml',
         folding: false
     })
+    // editor.onDidChangeModelContent(e => {
+    //     if (e.changes[0].text >= 'A' && e.changes[0].text <= 'Z') {
+    //         editor.trigger('func', 'editor.action.triggerSuggest', {})
+    //     }
+    // })
 
     editor.addAction({
         id: 'smml-save',

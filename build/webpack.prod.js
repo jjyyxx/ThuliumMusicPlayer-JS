@@ -6,6 +6,7 @@ const WorkboxPlugin = require('workbox-webpack-plugin')
 const path = require('path')
 
 module.exports = merge(common, {
+    mode: 'production',
     plugins: [
         new UglifyJSPlugin(),
         new CopyWebpackPlugin([
