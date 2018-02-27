@@ -1,9 +1,10 @@
 import { Tokenizer } from 'smml-tokenizer-js'
 import * as waf from 'webaudiofont'
-import { Parser } from 'qingyun-musicplayer-parser/src/Parser'
-import { MIDIAdapter } from 'qingyun-musicplayer-parser/src/adapter/MIDIAdapter'
+import { Parser, MIDIAdapter } from 'qingyun-musicplayer-parser'
 import { audioLibDir, defaultInstr, drumDict, instrDict } from './config'
-
+window.MIDIAdapter = MIDIAdapter
+window.Parser = Parser
+window.Tokenizer = Tokenizer
 window.fonts = window.fonts || {}
 
 function audioLibFile(instr) {
