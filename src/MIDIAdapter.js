@@ -28,7 +28,10 @@ class MIDIAdapter {
             }
             prevTime += Math.max(...durs)
         }
-        return Object.values(trackMap)
+        return {
+            tracks: Object.values(trackMap),
+            time: prevTime
+        }
     }
 }
 

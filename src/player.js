@@ -31,7 +31,10 @@ function audioLibVar(instr) {
 export class Player {
     constructor(value) {
         this.value = value
-        this.tracks = new Parser(new Tokenizer(value).tokenize(), new MIDIAdapter()).parse()
+        const result = new Parser(new Tokenizer(value).tokenize(), new MIDIAdapter()).parse()
+        this.tracks = result.tracks
+        this.time = result.time
+        this.dueTime = undefined
         this.ctx = new AudioContext()
         this.player = new wafPlayer()
     }
@@ -41,6 +44,7 @@ export class Player {
         Promise.all(instrNames.map((instr) => this.player.loader.load(this.ctx, audioLibFile(instr), audioLibVar(instr)))).then(
             (instrs) => {
                 const initialTime = this.ctx.currentTime
+                this.dueTime = initialTime + this.time
                 for (var i = 0, tracksLength = this.tracks.length; i < tracksLength; i++) {
                     const content = this.tracks[i].Content
                     for (var j = 0, contentLength = content.length; j < contentLength; j++) {
@@ -83,6 +87,12 @@ export class Player {
     }
 
     toggle() {
+        if (this.dueTime < this.ctx.currentTime) {
+            this.dueTime = undefined
+            this.play()
+            this.resume()
+            return
+        }
         switch (this.ctx.state) {
         case 'running':
             this.suspend()
