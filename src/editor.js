@@ -654,9 +654,9 @@ export function showEditor() {
         contextMenuGroupId: 'navigation',
         contextMenuOrder: 1.5,
         run(editor) {
-            const value = editor.getValue()
             if (player instanceof Player) {
                 player.close()
+                player = undefined
             }
         }
     })
