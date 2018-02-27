@@ -595,7 +595,7 @@ export function showEditor() {
 
     editor.addAction({
         id: 'smml-save',
-        label: 'Save smml file',
+        label: 'Save File',
         keybindings: [
             window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_S,
         ],
@@ -619,7 +619,7 @@ export function showEditor() {
     })
     editor.addAction({
         id: 'smml-play',
-        label: 'Play smml file',
+        label: 'Play/Pause',
         keybindings: [
             window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_P,
         ],
@@ -640,6 +640,23 @@ export function showEditor() {
             } else {
                 player = new Player(value)
                 player.play()
+            }
+        }
+    })
+    editor.addAction({
+        id: 'smml-stop',
+        label: 'Stop Playing',
+        keybindings: [
+            window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_T,
+        ],
+        precondition: null,
+        keybindingContext: null,
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run(editor) {
+            const value = editor.getValue()
+            if (player instanceof Player) {
+                player.close()
             }
         }
     })

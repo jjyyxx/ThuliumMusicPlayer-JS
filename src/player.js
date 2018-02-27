@@ -35,14 +35,9 @@ export class Player {
         this.tracks = new Parser(new Tokenizer(value).tokenize(), new MIDIAdapter()).parse()
         this.ctx = new AudioContext()
         this.player = new waf.Player()
-        this.status = 0
     }
 
     play() {
-        if (status === 1) {
-            return
-        }
-        this.status = 1
         const instrNames = this.tracks.map((track) => track.Instrument)
         Promise.all(instrNames.map((instr) => this.player.loader.load(this.ctx, audioLibFile(instr), audioLibVar(instr)))).then(
             (instrs) => {
@@ -68,39 +63,34 @@ export class Player {
     }
 
     suspend() {
-        if (this.status === 2) {
+        if (this.ctx.state !== 'running') {
             return
         }
-        this.status = 2
         this.ctx.suspend()
     }
 
     resume() {
-        if (status === 1) {
+        if (this.ctx.state !== 'suspended') {
             return
         }
-        this.status = 1
         this.ctx.resume()
     }
 
     close() {
-        if (this.status === 3) {
+        if (this.ctx.state === 'closed') {
             return
         }
-        this.status = 3
         this.ctx.close()
     }
 
     toggle() {
-        switch (this.status) {
-        case 0:
-            this.play()
-            break
-        case 1:
+        switch (this.ctx.state) {
+        case 'running':
             this.suspend()
             break
-        case 2:
+        case 'suspended':
             this.resume()
+            break
         }
     }
 }
