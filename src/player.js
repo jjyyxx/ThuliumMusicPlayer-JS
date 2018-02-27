@@ -1,10 +1,9 @@
-import { Tokenizer } from 'smml-tokenizer-js'
-import * as waf from 'webaudiofont'
-import { Parser, MIDIAdapter } from 'qingyun-musicplayer-parser'
+const Tokenizer = require('./tokenizer/Tokenizer')
+const wafPlayer = require('./waf/player')
+const Parser = require('./parser/Parser')
+const MIDIAdapter = require('./MIDIAdapter')
 import { audioLibDir, defaultInstr, drumDict, instrDict } from './config'
-window.MIDIAdapter = MIDIAdapter
-window.Parser = Parser
-window.Tokenizer = Tokenizer
+
 window.fonts = window.fonts || {}
 
 function audioLibFile(instr) {
@@ -34,7 +33,7 @@ export class Player {
         this.value = value
         this.tracks = new Parser(new Tokenizer(value).tokenize(), new MIDIAdapter()).parse()
         this.ctx = new AudioContext()
-        this.player = new waf.Player()
+        this.player = new wafPlayer()
     }
 
     play() {
