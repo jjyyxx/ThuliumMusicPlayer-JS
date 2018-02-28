@@ -3,7 +3,7 @@ const { BarLengthError, DupChordError, TraceError, VolumeError } = require('./Er
 class TrackParser {
     /**
      * 
-     * @param {SMML.ParsedTrack} trackResult 
+     * @param {Tm.ParsedTrack} trackResult 
      */
     static processPedal(trackResult) {
         const content = trackResult.Content
@@ -34,8 +34,8 @@ class TrackParser {
 
     /**
      *
-     * @param {SMML.Track} track
-     * @param {SMML.GlobalSetting} sectionSettings
+     * @param {Tm.Track} track
+     * @param {Tm.GlobalSetting} sectionSettings
      */
     constructor(track, sectionSettings, libraries, isSubtrack = false) {
         this.isSubtrack = isSubtrack
@@ -54,7 +54,7 @@ class TrackParser {
     }
 
     /**
-     * @returns {SMML.ParsedTrack[]}
+     * @returns {Tm.ParsedTrack[]}
      */
     parseTrack() {
         this.preprocess()
@@ -124,7 +124,7 @@ class TrackParser {
 
     /**
      * parse track content
-     * @returns {SMML.ParsedTrack}
+     * @returns {Tm.ParsedTrack}
      */
     parseTrackContent() {
         const result = []
@@ -264,8 +264,8 @@ class TrackParser {
 
     /**
      *
-     * @param {SMML.NoteToken} note
-     * @returns {SMML.ParsedNote[]}
+     * @param {Tm.NoteToken} note
+     * @returns {Tm.ParsedNote[]}
      */
     parseNote(note) {
         const pitches = []
@@ -351,7 +351,7 @@ class TrackParser {
 
     /**
     *
-    * @param {SMML.Pitch} pitch
+    * @param {Tm.Pitch} pitch
     * @returns {number[]}
     */
     parseChord(pitch) {
@@ -376,7 +376,7 @@ class TrackParser {
 
     /**
      *
-     * @param {SMML.Pitch} pitch
+     * @param {Tm.Pitch} pitch
      * @returns {number[]}
      */
     parsePitch(pitch, base) {
@@ -390,7 +390,7 @@ class TrackParser {
 
     /**
      *
-     * @param {SMML.NoteToken} note
+     * @param {Tm.NoteToken} note
      * @returns {number}
      */
     parseBeat(note) {

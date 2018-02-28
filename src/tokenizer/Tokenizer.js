@@ -998,7 +998,7 @@ class Tokenizer {
     }
     /**
      * Construct a tokenizer
-     * @param {string} content SMML string to tokenize
+     * @param {string} content Tm string to tokenize
      */
     constructor(content) {
         this.content = content

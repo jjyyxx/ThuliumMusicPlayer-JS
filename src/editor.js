@@ -524,17 +524,17 @@ const LangDef = {
 let player
 export function defineLanguage() {
     window.monaco.languages.register({
-        id: 'smml',
-        extensions: ['sml']
+        id: 'tm',
+        extensions: ['tm']
     })
-    window.monaco.editor.defineTheme('smml', {
+    window.monaco.editor.defineTheme('tm', {
         base: 'vs-dark',
         inherit: true,
         rules: ColorRules,
         colors: {}
     })
-    window.monaco.languages.setMonarchTokensProvider('smml', LangDef)
-    window.monaco.languages.registerDefinitionProvider('smml', {
+    window.monaco.languages.setMonarchTokensProvider('tm', LangDef)
+    window.monaco.languages.registerDefinitionProvider('tm', {
         provideDefinition(model, position, token) {
             const matches = model.findMatches('@[A-Za-z0-9]+', false, true, false, '', true)
             const trueMatch = matches.find((match) => match.range.startLineNumber === position.lineNumber && match.range.endLineNumber === position.lineNumber && match.range.startColumn <= position.column && match.range.endColumn >= position.column)
@@ -546,7 +546,7 @@ export function defineLanguage() {
             }
         }
     })
-    window.monaco.languages.registerCompletionItemProvider('smml', {
+    window.monaco.languages.registerCompletionItemProvider('tm', {
         triggerCharacters: ['<', '@'],
         provideCompletionItems(model, position, token) {
             const char = model.getValueInRange({ startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: position.column - 1, endColumn: position.column })
@@ -580,11 +580,11 @@ export function defineLanguage() {
 
 export function showEditor() {
     const container = document.getElementById('container')
-    const model = window.monaco.editor.createModel(localStorage.getItem('lastText'), 'smml')
+    const model = window.monaco.editor.createModel(localStorage.getItem('lastText'), 'tm')
     const editor = window.monaco.editor.create(container, {
         model,
-        language: 'smml',
-        theme: 'smml',
+        language: 'tm',
+        theme: 'tm',
         folding: false
     })
     // editor.onDidChangeModelContent(e => {
@@ -594,7 +594,7 @@ export function showEditor() {
     // })
 
     editor.addAction({
-        id: 'smml-save',
+        id: 'tm-save',
         label: 'Save File',
         keybindings: [
             window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_S,
@@ -618,7 +618,7 @@ export function showEditor() {
         }
     })
     editor.addAction({
-        id: 'smml-play',
+        id: 'tm-play',
         label: 'Play/Pause',
         keybindings: [
             window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_P,
@@ -644,7 +644,7 @@ export function showEditor() {
         }
     })
     editor.addAction({
-        id: 'smml-stop',
+        id: 'tm-stop',
         label: 'Stop Playing',
         keybindings: [
             window.monaco.KeyMod.CtrlCmd | window.monaco.KeyCode.KEY_T,

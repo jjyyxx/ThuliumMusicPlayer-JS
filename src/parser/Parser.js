@@ -4,9 +4,9 @@ const { TrackParser } = require('./TrackParser')
 
 class Parser {
     /**
-     * SMML Parser
-     * @param {SMML.TokenizedData} tokenizedData 经过tok的JSON对象
-     * @param {SMML.Adapter} adapter 可选的Adapter
+     * Tm Parser
+     * @param {Tm.TokenizedData} tokenizedData 经过tok的JSON对象
+     * @param {Tm.Adapter} adapter 可选的Adapter
      * @example
      * new Parser(tokenizedData)
      * new Parser(tokenizedData, new MIDIAdapter())
@@ -109,7 +109,7 @@ class Parser {
 
     /**
      * parse section
-     * @param {SMML.Section} section
+     * @param {Tm.Section} section
      */
     parseSection(section) {
         section.Settings.filter((token) => token.Type === 'FUNCTION')

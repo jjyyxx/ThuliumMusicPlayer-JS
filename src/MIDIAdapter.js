@@ -1,6 +1,6 @@
 /**
  * @class
- * @implements {SMML.Adapter}
+ * @implements {Tm.Adapter}
  */
 class MIDIAdapter {
     /**
