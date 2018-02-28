@@ -120,22 +120,9 @@ class Player {
         return envelope
     }
 
-    noZeroVolume(n) {
-        if (n > this.nearZero) {
-            return n
-        } else {
-            return this.nearZero
-        }
-    }
-
-    numValue(aValue, defValue) {
-        if (typeof aValue === 'number') {
-            return aValue
-        } else {
-            return defValue
-        }
-    }
-
+    /**
+     * setup attack-hold-decay-sustain-release envelop
+     */
     setupEnvelope(ctx, envelope, zone, volume, when, sampleDuration, noteDuration) {
         envelope.gain.setValueAtTime(this.noZeroVolume(0), ctx.currentTime)
         var lastTime = 0
@@ -189,10 +176,9 @@ class Player {
     }
 
     findEnvelope(ctx, target/*, when , duration */) {
-        var envelope = null
-        for (var i = 0; i < this.envelopes.length; i++) {
-            var e = this.envelopes[i]
-            if (e.target == target && ctx.currentTime > e.when + e.duration + 0.1) {
+        var envelope = undefined
+        for (const e of this.envelopes) {
+            if (e.target === target && ctx.currentTime > e.when + e.duration + 0.1) {
                 try {
                     e.audioBufferSourceNode.disconnect()
                     e.audioBufferSourceNode.stop(0)
@@ -204,7 +190,7 @@ class Player {
                 break
             }
         }
-        if (!(envelope)) {
+        if (envelope === undefined) {
             envelope = ctx.createGain()
             envelope.target = target
             envelope.connect(target)
@@ -219,18 +205,6 @@ class Player {
             this.envelopes.push(envelope)
         }
         return envelope
-    }
-
-    adjustPreset(ctx, preset) {
-        return Promise.all(preset.zones.map((zone) => this.adjustZone(ctx, zone)))
-    }
-
-    findZone(ctx, preset, pitch) {
-        const zone = preset.zones.find((zone) => zone.keyRangeLow <= pitch && zone.keyRangeHigh + 1 >= pitch)
-        if (zone !== undefined) {
-            this.adjustZone(ctx, zone)
-        }
-        return zone
     }
 
     adjustZone(ctx, zone) {
@@ -283,8 +257,7 @@ class Player {
     }
 
     cancelQueue(ctx) {
-        for (var i = 0; i < this.envelopes.length; i++) {
-            var e = this.envelopes[i]
+        for (const e of this.envelopes) {
             e.gain.cancelScheduledValues(0)
             e.gain.setValueAtTime(this.nearZero, ctx.currentTime)
             e.when = -1
@@ -293,6 +266,33 @@ class Player {
             } catch (ex) {
                 console.log(ex)
             }
+        }
+    }
+
+    adjustPreset(ctx, preset) {
+        return Promise.all(preset.zones.map((zone) => this.adjustZone(ctx, zone)))
+    }
+
+    /**
+     * zones must have been initialized
+     */
+    findZone(ctx, preset, pitch) {
+        return preset.zones.find((zone) => zone.keyRangeLow <= pitch && zone.keyRangeHigh + 1 >= pitch)
+    }
+
+    noZeroVolume(n) {
+        if (n > this.nearZero) {
+            return n
+        } else {
+            return this.nearZero
+        }
+    }
+
+    numValue(aValue, defValue) {
+        if (typeof aValue === 'number') {
+            return aValue
+        } else {
+            return defValue
         }
     }
 }
