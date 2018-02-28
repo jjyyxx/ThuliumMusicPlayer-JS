@@ -684,4 +684,7 @@ export function showEditor() {
     })
     container.addEventListener('dragover', e => e.preventDefault())
     editor.updateOptions({ mouseWheelZoom: true })
+    const pre = document.getElementById('pre')
+    pre.style.opacity = 0
+    pre.addEventListener('transitionend', () => pre.remove())
 }
