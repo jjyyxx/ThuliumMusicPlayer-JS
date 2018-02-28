@@ -11,7 +11,7 @@ class Loader {
                 mode: 'cors'
             })
             const json = await response.json()
-            await this.player.constructor.adjustPreset(ctx, json)
+            await this.player.adjustPreset(ctx, json)
             window.fonts[name] = json
         }
         return name

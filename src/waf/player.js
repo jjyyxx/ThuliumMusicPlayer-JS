@@ -1,23 +1,18 @@
 const Loader = require('./loader')
-const Channel = require('./channel')
-const Reverberator = require('./reverberator')
 class Player {
+    /** 构造方法，初始化Loader*/
     constructor() {
         this.envelopes = []
         this.loader = new Loader(this)
         this.onCacheFinish = null
         this.onCacheProgress = null
         this.afterTime = 0.05
+        this.nearZero = 0.000001
     }
 
-    static createChannel(ctx) {
-        return new Channel(ctx)
-    }
-
-    static async createReverberator(ctx) {
-        return await Reverberator.create(ctx)
-    }
-
+    /**
+     * 辅助方法，用于构造Chord/Strum/Snap
+     */
     queueChord(ctx, target, preset, when, pitches, duration, volume, slides) {
         for (var i = 0; i < pitches.length; i++) {
             this.queueWaveTable(ctx, target, preset, when, pitches[i], duration, volume - Math.random() * 0.01, slides)
@@ -55,13 +50,25 @@ class Player {
         this.queueChord(ctx, target, preset, when, pitches, duration, volume, slides)
     }
 
+    /**
+     * 播放的基本方法
+     * @param {AudioContext} ctx 
+     * @param {AudioDestinationNode} target 
+     * @param {AudioFont} preset sf2转化得到的json音源对象
+     * @param {number} when 开始时间
+     * @param {number} pitch 音高
+     * @param {number} duration 持续时间
+     * @param {number} volume 音量
+     * @param {any[]} slides
+     * @returns {GainNode }
+     */
     queueWaveTable(ctx, target, preset, when, pitch, duration, volume, slides) {
         if (volume) {
             volume = 1.0 * volume
         } else {
             volume = 1.0
         }
-        var zone = Player.findZone(ctx, preset, pitch)
+        var zone = this.findZone(ctx, preset, pitch)
         if (!(zone.buffer)) {
             console.log('empty buffer ', zone)
             return
@@ -87,14 +94,12 @@ class Player {
         this.setupEnvelope(ctx, envelope, zone, volume, startWhen, waveDuration, duration)
         envelope.audioBufferSourceNode = ctx.createBufferSource()
         envelope.audioBufferSourceNode.playbackRate.value = playbackRate
-        if (slides) {
-            if (slides.length > 0) {
-                envelope.audioBufferSourceNode.playbackRate.setValueAtTime(playbackRate, when)
-                for (var i = 0; i < slides.length; i++) {
-                    var newPlaybackRate = 1.0 * Math.pow(2, (100.0 * slides[i].pitch - baseDetune) / 1200.0)
-                    var newWhen = when + slides[i].when
-                    envelope.audioBufferSourceNode.playbackRate.linearRampToValueAtTime(newPlaybackRate, newWhen)
-                }
+        if (slides && slides.length > 0) {
+            envelope.audioBufferSourceNode.playbackRate.setValueAtTime(playbackRate, when)
+            for (var i = 0; i < slides.length; i++) {
+                var newPlaybackRate = 1.0 * Math.pow(2, (100.0 * slides[i].pitch - baseDetune) / 1200.0)
+                var newWhen = when + slides[i].when
+                envelope.audioBufferSourceNode.playbackRate.linearRampToValueAtTime(newPlaybackRate, newWhen)
             }
         }
         envelope.audioBufferSourceNode.buffer = zone.buffer
@@ -115,16 +120,24 @@ class Player {
         return envelope
     }
 
-    static noZeroVolume(n) {
-        if (n > Player.nearZero) {
+    noZeroVolume(n) {
+        if (n > this.nearZero) {
             return n
         } else {
-            return Player.nearZero
+            return this.nearZero
+        }
+    }
+
+    numValue(aValue, defValue) {
+        if (typeof aValue === 'number') {
+            return aValue
+        } else {
+            return defValue
         }
     }
 
     setupEnvelope(ctx, envelope, zone, volume, when, sampleDuration, noteDuration) {
-        envelope.gain.setValueAtTime(Player.noZeroVolume(0), ctx.currentTime)
+        envelope.gain.setValueAtTime(this.noZeroVolume(0), ctx.currentTime)
         var lastTime = 0
         var lastVolume = 0
         var duration = noteDuration
@@ -146,8 +159,7 @@ class Player {
                 }, {
                     duration: 3,
                     volume: 0
-                }
-                ]
+                }]
             }
         } else {
             ahdsr = [{
@@ -156,33 +168,24 @@ class Player {
             }, {
                 duration: duration,
                 volume: 1
-            }
-            ]
+            }]
         }
         envelope.gain.cancelScheduledValues(when)
-        envelope.gain.setValueAtTime(Player.noZeroVolume(ahdsr[0].volume * volume), when)
+        envelope.gain.setValueAtTime(this.noZeroVolume(ahdsr[0].volume * volume), when)
         for (var i = 0; i < ahdsr.length; i++) {
             if (ahdsr[i].duration > 0) {
                 if (ahdsr[i].duration + lastTime > duration) {
                     var r = 1 - (ahdsr[i].duration + lastTime - duration) / ahdsr[i].duration
                     var n = lastVolume - r * (lastVolume - ahdsr[i].volume)
-                    envelope.gain.linearRampToValueAtTime(Player.noZeroVolume(volume * n), when + duration)
+                    envelope.gain.linearRampToValueAtTime(this.noZeroVolume(volume * n), when + duration)
                     break
                 }
                 lastTime = lastTime + ahdsr[i].duration
                 lastVolume = ahdsr[i].volume
-                envelope.gain.linearRampToValueAtTime(Player.noZeroVolume(volume * lastVolume), when + lastTime)
+                envelope.gain.linearRampToValueAtTime(this.noZeroVolume(volume * lastVolume), when + lastTime)
             }
         }
-        envelope.gain.linearRampToValueAtTime(Player.noZeroVolume(0), when + duration + this.afterTime)
-    }
-
-    static numValue(aValue, defValue) {
-        if (typeof aValue === 'number') {
-            return aValue
-        } else {
-            return defValue
-        }
+        envelope.gain.linearRampToValueAtTime(this.noZeroVolume(0), when + duration + this.afterTime)
     }
 
     findEnvelope(ctx, target/*, when , duration */) {
@@ -218,20 +221,28 @@ class Player {
         return envelope
     }
 
-    static adjustPreset(ctx, preset) {
-        return Promise.all(preset.zones.map((zone) => Player.adjustZone(ctx, zone)))
+    adjustPreset(ctx, preset) {
+        return Promise.all(preset.zones.map((zone) => this.adjustZone(ctx, zone)))
     }
 
-    static adjustZone(ctx, zone) {
+    findZone(ctx, preset, pitch) {
+        const zone = preset.zones.find((zone) => zone.keyRangeLow <= pitch && zone.keyRangeHigh + 1 >= pitch)
+        if (zone !== undefined) {
+            this.adjustZone(ctx, zone)
+        }
+        return zone
+    }
+
+    adjustZone(ctx, zone) {
         if (!zone.buffer) {
             zone.delay = 0
-            zone.loopStart = Player.numValue(zone.loopStart, 0)
-            zone.loopEnd = Player.numValue(zone.loopEnd, 0)
-            zone.coarseTune = Player.numValue(zone.coarseTune, 0)
-            zone.fineTune = Player.numValue(zone.fineTune, 0)
-            zone.originalPitch = Player.numValue(zone.originalPitch, 6000)
-            zone.sampleRate = Player.numValue(zone.sampleRate, 44100)
-            zone.sustain = Player.numValue(zone.originalPitch, 0)
+            zone.loopStart = this.numValue(zone.loopStart, 0)
+            zone.loopEnd = this.numValue(zone.loopEnd, 0)
+            zone.coarseTune = this.numValue(zone.coarseTune, 0)
+            zone.fineTune = this.numValue(zone.fineTune, 0)
+            zone.originalPitch = this.numValue(zone.originalPitch, 6000)
+            zone.sampleRate = this.numValue(zone.sampleRate, 44100)
+            zone.sustain = this.numValue(zone.originalPitch, 0)
             if (zone.sample) {
                 const decoded = atob(zone.sample)
                 zone.buffer = ctx.createBuffer(1, decoded.length / 2, zone.sampleRate)
@@ -262,40 +273,20 @@ class Player {
                     b = decoded.charCodeAt(i)
                     view[i] = b
                 }
-                return Player.decodeAudioData(ctx, zone, arraybuffer).then((buffer) => {
+                return new Promise((resolve, reject) => {
+                    ctx.decodeAudioData(arraybuffer, resolve, reject)
+                }).then((buffer) => {
                     zone.buffer = buffer
                 })
             }
         }
     }
 
-    static decodeAudioData(ctx, zone, arraybuffer) {
-        return new Promise((resolve, reject) => {
-            ctx.decodeAudioData(arraybuffer, resolve, reject)
-        })
-    }
-
-    static findZone(ctx, preset, pitch) {
-        var zone = null
-        for (var i = preset.zones.length - 1; i >= 0; i--) {
-            zone = preset.zones[i]
-            if (zone.keyRangeLow <= pitch && zone.keyRangeHigh + 1 >= pitch) {
-                break
-            }
-        }
-        try {
-            Player.adjustZone(ctx, zone)
-        } catch (ex) {
-            console.log('adjustZone', ex)
-        }
-        return zone
-    }
-
     cancelQueue(ctx) {
         for (var i = 0; i < this.envelopes.length; i++) {
             var e = this.envelopes[i]
             e.gain.cancelScheduledValues(0)
-            e.gain.setValueAtTime(Player.nearZero, ctx.currentTime)
+            e.gain.setValueAtTime(this.nearZero, ctx.currentTime)
             e.when = -1
             try {
                 e.audioBufferSourceNode.disconnect()
@@ -305,6 +296,5 @@ class Player {
         }
     }
 }
-Player.nearZero = 0.000001
 
 module.exports = Player
