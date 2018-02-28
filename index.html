@@ -58,15 +58,6 @@
             animation: progress-bar-stripes .5s linear infinite;
         }
 
-        .dotdotdot:after {
-            font-weight: 300;
-            content: '...';
-            display: inline-block;
-            width: 20px;
-            text-align: left;
-            animation: dotdotdot 1.5s linear infinite;
-        }
-
         .progress-bar {
             display: flex;
             -webkit-box-orient: vertical;
@@ -83,21 +74,6 @@
             transition: width 0.6s ease;
             background-image: linear-gradient(45deg, rgba(255, 255, 255, 0.15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, 0.15) 50%, rgba(255, 255, 255, 0.15) 75%, transparent 75%, transparent);
             background-size: 1rem 1rem;
-        }
-
-        @keyframes dotdotdot {
-            0% {
-                content: '...';
-            }
-            25% {
-                content: '';
-            }
-            50% {
-                content: '.';
-            }
-            75% {
-                content: '..';
-            }
         }
     </style>
     <title>Document</title>
@@ -126,9 +102,7 @@
         <div>
             <div class="progress">
                 <div class="progress-bar active" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%">
-                    <span>Please wait
-                        <span class="dotdotdot"></span>
-                    </span>
+                    <span>Please wait</span>
                 </div>
             </div>
         </div>
