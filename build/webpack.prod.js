@@ -17,7 +17,9 @@ module.exports = merge(common, {
         ]),
         new WorkboxPlugin({
             globDirectory: 'dist',
-            globPatterns: ['**/*.{html,js,css,ico}'],
+            globPatterns: [
+                '**/*.{html,js,css,png}'
+            ],
             swDest: path.join('dist', 'sw.js'),
             clientsClaim: true,
             skipWaiting: true,
