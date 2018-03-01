@@ -956,7 +956,7 @@ class Tokenizer {
         const state = stateStore[0]
         for (let i = 0; i < sDef.length; i++) {
             const s = sDef[i]
-            for (let j = 1; j <= state.length - s.pat.length; j++) {
+            for (let j = 0; j <= state.length - s.pat.length; j++) {
                 let isMatch = true
                 for (let k = 0; k < s.pat.length; k++) {
                     if (s.pat[k].Type === state[j + k].Type) {
