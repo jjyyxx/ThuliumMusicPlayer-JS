@@ -47,11 +47,11 @@ const sDef = [
                 Name: 'Tremolo2',
                 Simplified: true,
                 Argument: [
-                    match[0],
                     {
                         Type: 'Expression',
                         Content: match[1].Content[0].Content.slice(0, -1)
                     },
+                    match[0],
                     match[2]
                 ]
             }

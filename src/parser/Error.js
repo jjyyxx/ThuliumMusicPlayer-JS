@@ -38,9 +38,23 @@ class VolumeError extends TmError{
     }
 }
 
+class UndefinedTokenError extends TmError{
+    constructor(id, index, token) {
+        super('Undef', '', id, index, token)
+    }
+}
+
+class DiffDurError extends TmError{
+    constructor(id, index) {
+        super('Sect::DiffDur', '', id, index)
+    }
+}
+
 module.exports = {
     BarLengthError,
     DupChordError,
     TraceError,
-    VolumeError
+    VolumeError,
+    UndefinedTokenError,
+    DiffDurError
 }
