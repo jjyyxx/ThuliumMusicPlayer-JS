@@ -73,7 +73,7 @@ const sDef = [
         transform(match) {
             return {
                 Type: 'FUNCTION',
-                Name: 'Porttamento',
+                Name: 'Portamento',
                 Simplified: true,
                 Argument: [
                     match[0],
@@ -358,8 +358,8 @@ const langDef = {
                         token: 'pos',
                         transform(pos) {
                             let order = []
-                            if (pos[1] !== undefined) {
-                                const parts = pos[1].split(',')
+                            if (pos[2] !== undefined) {
+                                const parts = pos[2].split(',')
                                 for (const part of parts) {
                                     if (part.includes('~')) {
                                         const [left, right] = part.split('~')
@@ -913,15 +913,21 @@ class Tokenizer {
                                 let isMatch = true
                                 for (let k = 0; k < s.pat.length; k++) {
                                     if (s.pat[k].Type === state[j + k].Type) {
-                                        if (s.pat[k].Type === 'sfunc') {
+                                        if (s.pat[k].Type === 'Sfunc') {
                                             for (let l = 0; l < s.pat[k].Content.length; l++) {
                                                 if (s.pat[k].Content[l] instanceof RegExp) {
-                                                    if (!s.pat[k].Content[l].test(state[j + k].Content[l])) {
+                                                    if (state[j + k].Content[l].Type !== 'Dyn' || !s.pat[k].Content[l].test(state[j + k].Content[l].Content)) {
                                                         isMatch = false
                                                         break
                                                     }
+                                                } else if (s.pat[k].Content[l].Type !== state[j + k].Content[l].Type) {
+                                                    isMatch = false
+                                                    break
                                                 }
                                             }
+                                        } else if (s.pat[k].Type === 'Undef' && s.pat[k].Content !== state[j + k].Content) {
+                                            isMatch = false
+                                            break
                                         }
                                     } else {
                                         isMatch = false
@@ -931,7 +937,6 @@ class Tokenizer {
                                 if (!isMatch) continue
                                 state.splice(j, s.pat.length, s.transform(state.slice(j, j + s.pat.length)))
                             }
-
                         }
                         states.pop()
                         stateStore[depth].push(stateStore[depth].pop()(state))
@@ -984,7 +989,6 @@ class Tokenizer {
                 if (!isMatch) continue
                 state.splice(j, s.pat.length, s.transform(state.slice(j, j + s.pat.length)))
             }
-
         }
         return state
     }
