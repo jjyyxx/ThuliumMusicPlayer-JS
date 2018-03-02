@@ -38,7 +38,7 @@ module.exports = {
             Meta: {
                 Duration: ts[1].Meta.Duration,
                 Incomplete: ts[1].Meta.Incomplete,
-                Single: true,
+                Single: ts[1].Meta.Single,
                 Warnings: [],
                 PitchQueue: [...ts[0].Meta.PitchQueue, ...ts[1].Meta.PitchQueue],
                 NotesBeforeTie: ts[(num - 1) % 2].Meta.NotesBeforeTie
@@ -50,6 +50,7 @@ module.exports = {
         const scale = Math.pow(2, Math.floor(Math.log2(expr))) / expr
         const t = new SubtrackParser(subtrack, this.Settings, this.Libraries, this.pitchQueue).parseTrack()
         t.Content.forEach((note) => {
+            note.__oriDur *= scale
             note.Duration *= scale
             note.StartTime *= scale
         })
@@ -78,7 +79,8 @@ module.exports = {
                 Pitch: pitch,
                 Volume: t2.Content[0].Volume,
                 Duration: 1 / port * 60 / this.Settings.Speed,
-                StartTime: index / port * 60 / this.Settings.Speed
+                StartTime: index / port * 60 / this.Settings.Speed,
+                __oriDur: 1 / port * 60 / this.Settings.Speed
             }
         })
 
@@ -86,8 +88,8 @@ module.exports = {
             Content: result,
             Meta: {
                 Duration: duration,
-                Incomplete: [duration],
-                Single: true,
+                Incomplete: t2.Meta.Incomplete,
+                Single: t2.Meta.Single,
                 Warnings: [],
                 PitchQueue: [...t1.Meta.PitchQueue, ...t2.Meta.PitchQueue],
                 NotesBeforeTie: [result[result.length - 1]]
@@ -110,11 +112,13 @@ module.exports = {
         t1.Content.forEach((note) => {
             note.Duration = actualDur
             note.StartTime *= dur
+            note.__oriDur = actualDur
         })
         const total = actualDur * num
         t2.Content.forEach((note) => {
             note.StartTime += total
             note.Duration -= total
+            note.__oriDur -= total
         })
         return {
             Content: [...t1.Content, ...t2.Content],
@@ -137,11 +141,13 @@ module.exports = {
         const total = actualDur * num
         t1.Content.forEach((note) => {
             note.Duration -= total
+            note.__oriDur -= total
         })
         t2.Content.forEach((note) => {
             note.Duration = actualDur
+            note.__oriDur = actualDur
             note.StartTime *= dur
-            note.StartTime += t1.Content[0].Duration
+            note.StartTime += t1.Meta.Duration - total
         })
         t1.Meta.NotesBeforeTie = t2.Meta.NotesBeforeTie
         return {
@@ -155,6 +161,7 @@ module.exports = {
         const ferm = this.Settings.getOrSetDefault('Ferm', 2)
         t.Content.forEach((note) => {
             note.Duration *= ferm
+            note.__oriDur *= ferm
             note.StartTime *= ferm
         })
         t.Meta.Duration *= ferm
@@ -178,6 +185,7 @@ module.exports = {
                 const temp = Object.assign({}, cur)
                 sum.push(temp)
                 temp.Duration = actualDur
+                temp.__oriDur = actualDur
                 for (const note of sum) {
                     result.push(Object.assign({}, note, { StartTime: actualDur * index }))
                 }
@@ -185,6 +193,7 @@ module.exports = {
                 t.Content.forEach((note) => {
                     note.StartTime += actualDur * index
                     note.Duration -= actualDur * index
+                    note.__oriDur -= actualDur * index
                 })
                 result.push(...t.Content)
             }

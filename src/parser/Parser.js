@@ -2,6 +2,7 @@ const Loader = require('./LibLoader')
 const GlobalSetting = require('./GlobalSetting')
 const { TrackParser } = require('./TrackParser')
 const { DiffDurError } = require('./Error')
+const EPSILON = 0.0000000001
 
 class Parser {
     /**
@@ -135,7 +136,7 @@ class Parser {
             Warnings: []
         }
         const max = Math.max(...sec.Tracks.map((track) => track.Meta.Duration))
-        if (!sec.Tracks.every((track) => track.Meta.Duration === max)) {
+        if (!sec.Tracks.every((track) => track.Meta.Duration - max < EPSILON)) {
             sec.Warnings.push(new DiffDurError(sec.ID, this.tokenizedData.Sections.indexOf(section)))
         }
         return sec
