@@ -518,7 +518,7 @@ const langDef = {
             }
         },
         {
-            regex: /^@[a-z]+/,
+            regex: /^@[a-zA-Z0-9]+/,
             action: {
                 token: 'macroIndicator',
                 transform(macro) {
